@@ -38,7 +38,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 <div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div>
 <div id="sum" class="sum"></div><div id="v"></div>
 <script>
-const URL_ = "여기에_웹앱_주소(/exec로_끝나는_주소)";   // Apps Script 배포 관리의 '웹 앱 URL'
+const URL_ = "https://script.google.com/macros/s/AKfycbx2BbwdKjUZDq78Xup1O8VgmCiqRZjzGdrsPrqoOKWjksNfGuC6UNdslBxRf1-luqtZGA/exec";   // Apps Script 배포 관리의 '웹 앱 URL'
 let KEY = location.hash.slice(1);   // 주소 뒤 #키 — 서버로 전송되지 않고 이 폰에만 저장됨
 try { if (KEY) localStorage.setItem('dc_key', KEY); else KEY = localStorage.getItem('dc_key') || ''; } catch (x) {}
 let data = null, mode = 'list'; const open = new Set();
