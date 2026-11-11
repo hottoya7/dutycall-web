@@ -16,6 +16,11 @@
 .det{display:none;padding:0 10px 10px;border-top:1px solid var(--line)}.row.open .det{display:block}
 .det .bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 3px}.bar i{display:block;height:100%;background:var(--c)}
 .g{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:12px;color:var(--sub);margin-top:8px}.g b{color:var(--tx);font-weight:500}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px}.sec b{font-size:13px}.sec span{font-size:11px;color:var(--sub)}
+.nx{background:var(--bg);border-radius:10px;padding:10px 12px}.nx .m{font-size:12px;color:var(--sub)}.nxb{font-size:17px;color:#7c8cf8}.nx0{font-size:13px;color:var(--sub)}
+.cp{display:inline-block;font-size:11.5px;color:var(--sub);border:1px solid var(--line);border-radius:9px;padding:2px 9px;margin:8px 6px 0 0}.cp b{color:var(--tx);font-weight:600}
+.rc>div{display:grid;grid-template-columns:92px 1fr auto;gap:8px;padding:7px 0;font-size:12.5px}.rc>div+div{border-top:1px solid var(--line)}.rc .w{color:var(--sub)}.rc .o{color:#7c8cf8}.rc .i{color:var(--grn)}.rc .r{text-align:right}.rc .x{color:var(--amb)}
+@media (prefers-color-scheme:light){.nxb,.rc .o{color:#3b5bdb}}
 .more{text-align:center;color:var(--sub);font-size:12px;padding:10px;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);font-weight:400;text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}td{padding:8px 4px;border-bottom:1px solid var(--line)}
 .gp{background:var(--card);border-radius:10px;margin-bottom:8px;overflow:hidden}
@@ -33,7 +38,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 <div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div>
 <div id="sum" class="sum"></div><div id="v"></div>
 <script>
-const URL_ = "https://script.google.com/macros/s/AKfycbx2BbwdKjUZDq78Xup1O8VgmCiqRZjzGdrsPrqoOKWjksNfGuC6UNdslBxRf1-luqtZGA/exec";   // Apps Script 배포 관리의 '웹 앱 URL'
+const URL_ = "여기에_웹앱_주소(/exec로_끝나는_주소)";   // Apps Script 배포 관리의 '웹 앱 URL'
 let KEY = location.hash.slice(1);   // 주소 뒤 #키 — 서버로 전송되지 않고 이 폰에만 저장됨
 try { if (KEY) localStorage.setItem('dc_key', KEY); else KEY = localStorage.getItem('dc_key') || ''; } catch (x) {}
 let data = null, mode = 'list'; const open = new Set();
@@ -70,6 +75,33 @@ function setupHtml(r) {
   if (!r.setupKnown) return '';
   return `<div class="grp" style="margin:10px 0 2px">설정 점검${r.miss.length ? ` <span style="color:var(--amb);font-weight:400">· ${r.miss.length}가지 미비</span>` : ' <span style="color:var(--grn);font-weight:400">· 모두 정상</span>'}</div><div class="g" style="margin-top:0">${SETUP_ITEMS.map(([c, n]) => `<span>${n} <b style="color:var(--${r.miss.indexOf(c) >= 0 ? 'red' : 'grn'})">${r.miss.indexOf(c) >= 0 ? '✗ 안 됨' : '✓'}</b></span>`).join('')}</div>`;
 }
+const D9 = t => new Date(t + 9 * 3600000);   // 한국 날짜 기준 (예정일별은 0시(한국) 값)
+const mdK = t => { const d = D9(t); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); };
+const hmK = t => { const d = D9(t); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
+const dayK = t => { const a = Math.floor(D9(t) / 86400000), b = Math.floor(D9(Date.now()) / 86400000); return a === b ? '오늘' : a === b - 1 ? '어제' : mdK(t); };
+const durK = s => Math.floor(s / 60) + '분 ' + (s % 60) + '초';
+const untilK = ms => { const m = Math.round(ms / 60000); return m < 1 ? '곧' : (m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분 뒤' : m + '분 뒤'); };
+function planHtml(r) {   // V114: 다음 통화 예정 + 최근 통화 (옛 앱은 빈 칸이라 숨김)
+  if (!r.recentKnown) return '';
+  const now = Date.now();
+  let main;
+  if (!r.auto) main = '<span class="nx0">자동 통화 꺼짐</span>';
+  else if (r.nextAt > now) main = `<b class="nxb">${dayK(r.nextAt)} ${hmK(r.nextAt)}경</b> <span class="m">· ${untilK(r.nextAt - now)}</span>`;
+  else if (r.nextToday > 0 || r.nextDays.length) main = '<b class="nxb">시각 계산 중</b>';
+  else main = '<span class="nx0">예정된 통화 없음</span>';
+  let chips = '';
+  if (r.auto) {
+    if (r.nextToday > 0) chips += `<span class="cp">오늘 남은 <b>${r.nextToday}회</b></span>`;
+    chips += r.nextDays.slice(0, 3).map(x => `<span class="cp">${mdK(x.t)} <b>${x.n}회</b></span>`).join('');
+    if (r.nextDays.length > 3) chips += '<span class="cp">…</span>';
+  }
+  const rc = r.recent.length ? r.recent.map(c => {
+    const bad = c.s <= 0;
+    return `<div><span class="w">${dayK(c.t)} ${hmK(c.t)}</span><span class="${c.k === 'O' ? 'o' : 'i'}">${c.k === 'O' ? '발신' : '수신'}</span><span class="r${bad ? ' x' : ''}">${bad ? (c.k === 'M' ? '부재중' : '연결 안 됨') : durK(c.s)}</span></div>`;
+  }).join('') : '<div><span class="w">아직 통화 기록이 없어요</span></div>';
+  return `<div class="sec"><b>다음 통화 예정</b><span>자동 발신 기준</span></div><div class="nx"><div>${main}</div>${chips}</div>` +
+    `<div class="sec"><b>최근 통화</b><span>최근 5건</span></div><div class="rc">${rc}</div>`;
+}
 function line(r) {
   const o = open.has(r.key) ? ' open' : '';
   return `<div class="ln ${cls[r.level]}${o}" data-id="${E(r.key)}"><div class="lh"><b>${E(r.label)}</b>
@@ -77,7 +109,7 @@ function line(r) {
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
    <span>기본 전화앱 <b>${r.dialer ? '예' : '아니오'}</b></span><span>소리샘 보호 <b>${r.guard ? '켜짐' : '꺼짐'}</b></span>
-   <span>마지막 통화 <b>${hm(r.lastCall)}</b></span><span>${E(r.carrier)} <b>${E(r.model)}</b></span>${r.batt >= 0 ? `<span>배터리 <b>${r.batt}%${r.chg ? ' · 충전 중' : ' · 충전 안 함'}</b></span>` : ''}</div>${setupHtml(r)}${data.canDel ? `<button class="dl${armed === r.key ? ' on' : ''}" data-k="${E(r.key)}">${armed === r.key ? '한 번 더 누르면 삭제' : '이 줄 삭제'}</button>` : ''}</div></div>`;
+   <span>마지막 통화 <b>${hm(r.lastCall)}</b></span><span>${E(r.carrier)} <b>${E(r.model)}</b></span>${r.batt >= 0 ? `<span>배터리 <b>${r.batt}%${r.chg ? ' · 충전 중' : ' · 충전 안 함'}</b></span>` : ''}</div>${planHtml(r)}${setupHtml(r)}${data.canDel ? `<button class="dl${armed === r.key ? ' on' : ''}" data-k="${E(r.key)}">${armed === r.key ? '한 번 더 누르면 삭제' : '이 줄 삭제'}</button>` : ''}</div></div>`;
 }
 function groups(R) {
   const m = new Map();
