@@ -43,11 +43,11 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .sheet .hd2{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
 .sheet .ttl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.sheet .ttl b{font-size:15px;text-transform:uppercase}.sheet .ttl i{font-style:normal;color:var(--sub);font-size:18px;padding:0 4px;cursor:pointer}
 .l0{--c:var(--red)}.l1{--c:var(--amb)}.l2{--c:var(--grn)}td.s{color:var(--c)}
-/* V116: 상세 접기·모두 펼치기 버튼 + 펼친 회선을 카드로 분리 */
+/* V116: 상세 접기·모두 펼치기 아이콘 버튼(⇳/⇕+열린 수) + 펼친 회선을 카드로 분리 */
 .bar2{display:flex;gap:8px;margin:0 -14px 6px;padding:8px 14px;align-items:stretch;position:sticky;top:0;z-index:5;background:var(--bg)}.bar2 .seg{flex:1;margin:0}
-.ca2{flex:none;border:0;background:var(--card);color:var(--tx);border-radius:10px;padding:0 14px;font-size:13px;font-weight:600;min-height:44px;white-space:nowrap;cursor:pointer}
-.ca2 i{font-style:normal;color:#7c8cf8;margin-right:5px;font-size:15px}
-.ca2 u{text-decoration:none;display:inline-block;min-width:20px;height:20px;line-height:20px;border-radius:10px;background:#7c8cf8;color:#fff;font-size:11.5px;text-align:center;margin-left:6px}
+.ca2{flex:none;width:52px;position:relative;display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--card);color:var(--tx);border-radius:10px;padding:0;min-height:44px;cursor:pointer}.ca2 span{display:none}.ca2:disabled{opacity:.35;cursor:default}
+.ca2 i{font-style:normal;color:#7c8cf8;margin:0;font-size:22px}
+.ca2 u{text-decoration:none;position:absolute;top:3px;right:3px;min-width:18px;height:18px;line-height:18px;padding:0 4px;border-radius:9px;background:#7c8cf8;color:#fff;font-size:10.5px;font-weight:700;text-align:center}
 .ln.open{margin:8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--c)}
 .ln.open+.ln,.ln+.ln.open{border-top:1px solid var(--line)}
 .ln.open .det{margin:0 10px}
@@ -200,11 +200,12 @@ document.addEventListener('click', e => {
 const nOpen = () => data ? data.rows.filter(r => open.has(r.key)).length : 0;
 function syncBC() {
   const b = $('bC'); if (!b) return;
-  b.style.display = mode === 'table' ? 'none' : '';
+  b.disabled = mode === 'table';   // 표 화면에서는 흐리게(자리 유지)
   const n = nOpen(), u = b.querySelector('u');
   b.querySelector('span').textContent = n ? '상세 접기' : '모두 펼치기';
   b.querySelector('i').textContent = n ? '⇕' : '⇳';
   u.textContent = n; u.style.display = n ? 'inline-block' : 'none';
+  b.title = n ? '상세 모두 접기' : '모두 펼치기'; b.setAttribute('aria-label', b.title);
 }
 $('bC').onclick = () => {
   if (!data) return;
