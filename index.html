@@ -43,9 +43,17 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .sheet .hd2{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
 .sheet .ttl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.sheet .ttl b{font-size:15px;text-transform:uppercase}.sheet .ttl i{font-style:normal;color:var(--sub);font-size:18px;padding:0 4px;cursor:pointer}
 .l0{--c:var(--red)}.l1{--c:var(--amb)}.l2{--c:var(--grn)}td.s{color:var(--c)}
+/* V116: 상세 접기·모두 펼치기 버튼 + 펼친 회선을 카드로 분리 */
+.bar2{display:flex;gap:8px;margin:0 -14px 6px;padding:8px 14px;align-items:stretch;position:sticky;top:0;z-index:5;background:var(--bg)}.bar2 .seg{flex:1;margin:0}
+.ca2{flex:none;border:0;background:var(--card);color:var(--tx);border-radius:10px;padding:0 14px;font-size:13px;font-weight:600;min-height:44px;white-space:nowrap;cursor:pointer}
+.ca2 i{font-style:normal;color:#7c8cf8;margin-right:5px;font-size:15px}
+.ca2 u{text-decoration:none;display:inline-block;min-width:20px;height:20px;line-height:20px;border-radius:10px;background:#7c8cf8;color:#fff;font-size:11.5px;text-align:center;margin-left:6px}
+.ln.open{margin:8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--c)}
+.ln.open+.ln,.ln+.ln.open{border-top:1px solid var(--line)}
+.ln.open .det{margin:0 10px}
 </style></head><body>
 <div class="top"><b>통화체크 현황</b><small id="upd">불러오는 중…</small></div>
-<div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div>
+<div class="bar2"><div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div><button id="bC" class="ca2"><i>⇳</i><span>모두 펼치기</span><u style="display:none">0</u></button></div>
 <div id="sum" class="sum"></div><div id="nxt"></div><div id="v"></div>
 <script>
 const URL_ = "https://script.google.com/macros/s/AKfycbx2BbwdKjUZDq78Xup1O8VgmCiqRZjzGdrsPrqoOKWjksNfGuC6UNdslBxRf1-luqtZGA/exec";   // Apps Script 배포 관리의 '웹 앱 URL'
@@ -153,7 +161,8 @@ function drawSheet() {   // V115: ▶ 다음 통화 시각을 누르면 뜨는 �
   if (!el) { el = document.createElement('div'); el.id = 'sh'; document.body.appendChild(el); }
   el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="ttl"><b>${E(r.label)} · 다음 통화 예정</b><i class="sx">✕</i></div>${nextBox(r)}<div class="m" style="color:var(--sub);font-size:11px;margin-top:10px">자동 발신 기준 · 바깥을 누르면 닫혀요</div></div>`;
 }
-function render() {
+function render() { renderMain(); syncBC(); }
+function renderMain() {
   if (!data) return;
   drawSheet();
   const R = data.rows, c = [0,1,2].map(l => R.filter(r => r.level === l));
@@ -185,8 +194,24 @@ document.addEventListener('click', e => {
     else { armed = k; render(); setTimeout(() => { if (armed === k) { armed = null; render(); } }, 4000); }
     return; }
   const h = e.target.closest('.gh'); if (h) { const n = h.parentNode.dataset.g; shut.has(n) ? shut.delete(n) : shut.add(n); render(); return; }
-  const l = e.target.closest('.ln'); if (l && e.target.closest('.lh')) { const id = l.dataset.id; open.has(id) ? open.delete(id) : open.add(id); l.classList.toggle('open'); }
+  const l = e.target.closest('.ln'); if (l && e.target.closest('.lh')) { const id = l.dataset.id; open.has(id) ? open.delete(id) : open.add(id); l.classList.toggle('open'); syncBC(); }
 });
+// V116: 상세 접기 / 모두 펼치기 (열린 회선 상세가 있으면 '상세 접기', 없으면 '모두 펼치기')
+const nOpen = () => data ? data.rows.filter(r => open.has(r.key)).length : 0;
+function syncBC() {
+  const b = $('bC'); if (!b) return;
+  b.style.display = mode === 'table' ? 'none' : '';
+  const n = nOpen(), u = b.querySelector('u');
+  b.querySelector('span').textContent = n ? '상세 접기' : '모두 펼치기';
+  b.querySelector('i').textContent = n ? '⇕' : '⇳';
+  u.textContent = n; u.style.display = n ? 'inline-block' : 'none';
+}
+$('bC').onclick = () => {
+  if (!data) return;
+  if (nOpen()) { open.clear(); openRc.clear(); }
+  else { shut.clear(); data.rows.forEach(r => open.add(r.key)); }
+  render();
+};
 $('bL').onclick = () => { mode = 'list'; $('bL').className = 'on'; $('bT').className = ''; render(); };
 $('bT').onclick = () => { mode = 'table'; $('bT').className = 'on'; $('bL').className = ''; render(); };
 window.onerror = (m) => { $('upd').textContent = '화면 오류: ' + m; };
