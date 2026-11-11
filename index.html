@@ -54,6 +54,33 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .ln.open{margin:8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--c)}
 .ln.open+.ln,.ln+.ln.open{border-top:1px solid var(--line)}
 .ln.open .det{margin:0 10px}
+/* V118: 그룹 제목줄 ⓘ(회선 기간) · 손가락으로 누르기 쉬운 크기(44px 이상) */
+.gh{padding:0 0 0 12px;min-height:48px;gap:4px;-webkit-tap-highlight-color:transparent;user-select:none}
+.gh .gn{flex:1;min-width:0;padding:13px 0;overflow-wrap:anywhere}
+.gh .gi{display:flex;align-items:center;white-space:nowrap}
+.gh .cv{width:48px;align-self:stretch;display:flex;align-items:center;justify-content:center;font-size:18px;margin-left:-8px}
+.ib{position:relative;flex:none;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:0;background:none;padding:0;margin:0 -4px 0 2px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ib i{font-style:normal;width:21px;height:21px;border-radius:50%;border:1.6px solid #8c9cf8;color:#8c9cf8;display:flex;align-items:center;justify-content:center;font:700 12px/1 Georgia,serif}
+.ib u{position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#ffa726;box-shadow:0 0 0 2px var(--card);pointer-events:none}
+.pc>div.soon,.pc>div.nx2.soon{border-color:#ffa726}.pc .d.f.soon{color:#ffa726}
+.ib.on i{background:#8c9cf8;color:#fff}
+.pd{padding:12px 14px 14px;border-bottom:1px solid var(--line)}
+.pdh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.pdh b{font-size:14px}.pdh span{font-size:12px;color:var(--sub)}.pdh span b{color:var(--tx);font-size:14px}
+.tl{position:relative;height:56px;margin:0 4px}
+.tl .lb{position:absolute;top:0;font-size:11px;color:var(--sub);white-space:nowrap}
+.tl .tr{position:absolute;left:0;right:0;top:24px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.tl .tr i{display:block;height:100%;background:#7c8cf8}
+.tl .tk{position:absolute;top:19px;width:2px;height:16px;margin-left:-1px;background:var(--sub);border-radius:1px}
+.tl .dt{position:absolute;top:20px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px var(--card)}
+.tl .td{position:absolute;top:38px;font-size:11px;font-weight:700;color:#7c8cf8;white-space:nowrap;transform:translateX(-50%)}
+.pc{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.pc>div{background:var(--bg);border:1.5px solid transparent;border-radius:10px;padding:8px 4px;text-align:center}
+.pc>div.nx2{border-color:#7c8cf8}
+.pc .k{font-size:11px;color:var(--sub)}.pc b{display:block;font-size:13.5px;margin:3px 0 2px;white-space:nowrap}.pc .d{font-size:11.5px;color:var(--sub)}.pc .d.f{color:#7c8cf8;font-weight:700}
+@media (prefers-color-scheme:light){.ib i{border-color:#3b5bdb;color:#3b5bdb}.ib.on i{background:#3b5bdb;color:#fff}.tl .tr i{background:#3b5bdb}.tl .td,.pc .d.f{color:#3b5bdb}.pc>div{background:var(--bg)}.pc>div.nx2{border-color:#3b5bdb}}
+.nt{position:relative}.nt::after{content:'';position:absolute;inset:-9px -8px}
+.rcT{min-height:44px;align-items:center;margin:8px 0 2px}
+.sheet .ttl i{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-12px -10px -12px 0}
+.dl{min-height:40px}
 </style></head><body>
 <div class="top"><b>통화체크 현황</b><small id="upd">불러오는 중…</small></div>
 <div class="bar2"><div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div><button id="bC" class="ca2"><i>⇳</i><span>모두 펼치기</span><u style="display:none">0</u></button></div>
@@ -70,7 +97,7 @@ const hm = t => { if (!t) return '-'; const d = new Date(t), n = new Date(); con
 const pct = (a, b) => b > 0 ? Math.min(100, Math.round(a * 100 / b)) : 0;
 const fmtMB = m => m >= 1000 ? (m / 1000).toFixed(2) + 'GB' : m + 'MB';   // 앱과 같은 1000 기준
 const names = ['● 확인 필요', '● 주의', '● 정상'], cls = ['l0','l1','l2'];
-const shut = new Set(); let armed = null; const openRc = new Set(); let sheetKey = null;   // V115: 최근 통화 펼침 · 다음 통화 창
+const shut = new Set(); let armed = null; const openRc = new Set(); let sheetKey = null; const pInfo = new Set();   // V118: ⓘ 회선 기간을 펼친 그룹   // V115: 최근 통화 펼침 · 다음 통화 창
 const SETUP_ITEMS = [['perm','권한'],['loc','위치'],['bat','배터리 최적화'],['ovl','다른 앱 위 표시'],['fsi','전체 화면 알림'],['use','사용 정보'],['dnd','방해 금지']];   // 설정 점검 표시 항목 (V108)
 function chips(r) { return ''; }   // V109: 배터리·설정 미비 칩 삭제 → 배터리는 오른쪽 시각 아래, 설정 미비는 사유 줄로
 function lineBody(r) {
@@ -151,11 +178,37 @@ function groups(R) {
   return [...m].map(([name, list]) => ({ name, list, lv: Math.min(...list.map(r => r.level)) }))
     .sort((a, b) => a.lv - b.lv || a.name.localeCompare(b.name, 'ko', { numeric: true }));
 }
+function grpPeriod(list) {   // V118: 같은 그룹은 날짜가 같음 → 회선 기간을 보낸 첫 줄 사용(옛 앱 폰만 있으면 없음)
+  const r = list.find(x => x.open > 0 && x.cancel > x.open);
+  return r ? { open: r.open, change: r.change, cancel: r.cancel } : null;
+}
+const chgSoon = p => { if (!(p.change > 0)) return false; const n = Math.floor(D9(p.change) / 86400000) - Math.floor(D9(Date.now()) / 86400000); return n >= 0 && n <= 7; };   // V118: 요금제 변경일 D-7 이내
+const dNo = t => Math.floor(D9(t) / 86400000);   // 한국 날짜 번호
+const ymdK = t => { const d = D9(t); return d.getUTCFullYear() + '.' + String(d.getUTCMonth() + 1).padStart(2, '0') + '.' + String(d.getUTCDate()).padStart(2, '0'); };
+const shK = t => { const d = D9(t), y = D9(Date.now()).getUTCFullYear(); return (d.getUTCFullYear() === y ? '' : String(d.getUTCFullYear()).slice(2) + '/') + (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); };
+function periodHtml(p) {   // V118: ⓘ를 누르면 제목줄 아래에 펼쳐지는 회선 기간(막대 + 카드 3개)
+  const T = dNo(Date.now()), a = dNo(p.open), z = dNo(p.cancel), span = Math.max(z - a, 1);
+  const ch = p.change > 0 ? dNo(p.change) : 0;
+  const at = d => Math.min(100, Math.max(0, (d - a) * 100 / span));
+  const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+  const dd = d => d > T ? `<span class="d f">D-${d - T}</span>` : d === T ? '<span class="d f">오늘</span>' : `<span class="d">${T - d}일 지남</span>`;
+  const nxt = [a, ch, z].findIndex(d => d && d >= T);   // 가장 가까운 앞날 카드 강조
+  const soon = chgSoon(p);
+  const card = (i, k, t, d) => `<div class="${i === nxt ? 'nx2' : ''}${i === 1 && soon ? ' soon' : ''}"><div class="k">${k}</div><b>${t ? ymdK(t) : '-'}</b>${d}</div>`;
+  const hd = T < a ? `가입 <b>D-${a - T}</b>` : T >= z ? '<b>해지 가능일 지남</b>' : `가입 <b>${T - a}일째</b>`;
+  const tp = at(T), cp = ch ? at(ch) : -1;
+  return `<div class="pd"><div class="pdh"><b>회선 기간</b><span>${hd}</span></div>
+   <div class="tl"><span class="lb" style="left:0">가입 ${shK(p.open)}</span>${cp >= 0 ? `<span class="lb" style="left:${clamp(cp, 24, 76)}%;transform:translateX(-50%)">요금제 변경 ${shK(p.change)}</span>` : ''}<span class="lb" style="right:0">해지 ${shK(p.cancel)}</span>
+   <div class="tr"><i style="width:${tp}%"></i></div>${cp >= 0 ? `<span class="tk" style="left:${cp}%"></span>` : ''}<span class="dt" style="left:${tp}%"></span><span class="td" style="left:${clamp(tp, 5, 95)}%">오늘</span></div>
+   <div class="pc">${card(0, '가입일', p.open, T >= a ? `<span class="d">${T - a}일 경과</span>` : dd(a))}${card(1, '요금제 변경일', p.change, ch ? (soon ? `<span class="d f soon">${ch === T ? '오늘' : 'D-' + (ch - T)} · 곧 변경</span>` : dd(ch)) : '<span class="d">-</span>')}${card(2, '해지일', p.cancel, dd(z))}</div></div>`;
+}
 function groupHtml(g) {
   const bad = g.list.filter(r => r.level === 0).length, warn = g.list.filter(r => r.level === 1).length;
   const info = g.list.length + '회선 · ' + (bad ? '확인 필요 ' + bad : warn ? '주의 ' + warn : '정상');
   const sh = shut.has(g.name) ? ' shut' : '';
-  return `<div class="gp${sh}" data-g="${E(g.name)}"><div class="gh"><div>${E(g.name)}</div><span>${info} ${sh ? '▸' : '▾'}</span></div>${g.list.map(line).join('')}</div>`;
+  const p = grpPeriod(g.list), io = p && pInfo.has(g.name);   // V118: ⓘ 회선 기간 (제목줄 누름=접기·펼치기 그대로, ⓘ만 기간 막대)
+  const ib = p ? `<button class="ib${io ? ' on' : ''}" data-pi="${E(g.name)}" aria-label="회선 기간 ${io ? '닫기' : '보기'}${chgSoon(p) ? ' · 요금제 변경 임박' : ''}" aria-expanded="${io ? 'true' : 'false'}"><i>i</i>${chgSoon(p) ? '<u></u>' : ''}</button>` : '';
+  return `<div class="gp${sh}" data-g="${E(g.name)}"><div class="gh" role="button" aria-expanded="${sh ? 'false' : 'true'}"><div class="gn">${E(g.name)}</div><span class="gi">${info}</span>${ib}<span class="cv">${sh ? '▸' : '▾'}</span></div>${io ? periodHtml(p) : ''}${g.list.map(line).join('')}</div>`;
 }
 function drawSheet() {   // V115: ▶ 다음 통화 시각을 누르면 뜨는 창(바깥·✕ 누르면 닫힘)
   let el = $('sh');
@@ -196,6 +249,7 @@ document.addEventListener('click', e => {
     if (armed === k) { armed = null; fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&del=' + encodeURIComponent(k)).then(r => r.json()).then(x => { if (x.ok) load(); else $('upd').textContent = '삭제 실패: ' + (x.error || ''); }).catch(er => { $('upd').textContent = '삭제 실패: ' + er; }); }
     else { armed = k; render(); setTimeout(() => { if (armed === k) { armed = null; render(); } }, 4000); }
     return; }
+  const pi = e.target.closest('.ib'); if (pi) { const n = pi.dataset.pi; pInfo.has(n) ? pInfo.delete(n) : pInfo.add(n); render(); return; }   // V118: ⓘ는 제목줄 접기와 따로
   const h = e.target.closest('.gh'); if (h) { const n = h.parentNode.dataset.g; shut.has(n) ? shut.delete(n) : shut.add(n); render(); return; }
   const l = e.target.closest('.ln'); if (l && e.target.closest('.lh')) { const id = l.dataset.id; open.has(id) ? open.delete(id) : open.add(id); l.classList.toggle('open'); syncBC(); }
 });
