@@ -98,11 +98,17 @@ body.sm{padding-bottom:84px}
 .cs .seg2{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}.cs .seg2 button{flex:1;border:0;background:none;color:var(--sub);min-height:42px;border-radius:9px;font-size:14px;cursor:pointer}.cs .seg2 .on{background:#5b6cf0;color:#fff;font-weight:700}
 .cs .c5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.cs .c5 button{border:1px solid var(--line);background:none;color:var(--tx);border-radius:10px;min-height:44px;font-size:14px;cursor:pointer}.cs .c5 .on{background:#5b6cf0;border-color:#5b6cf0;color:#fff;font-weight:700}
 .cs input{width:100%;margin-top:8px;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px}
-.cs .stp{display:flex;align-items:center;gap:10px}.cs .stp button{width:56px;min-height:48px;border:0;border-radius:12px;background:var(--line);color:var(--tx);font-size:22px;cursor:pointer}.cs .stp button:disabled{opacity:.3}.cs .stp b{flex:1;text-align:center;font-size:22px}.cs .stp i{font-style:normal;color:var(--sub);font-size:12px;width:34px}
+.cs .stp{display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.cs .stp button{width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:12px;background:var(--line);color:var(--tx);font-size:22px;cursor:pointer;touch-action:manipulation}.cs .stp button:disabled{opacity:.3;cursor:default}.cs .stp b{font-size:16px;min-width:34px;text-align:center;font-variant-numeric:tabular-nums}
+.cs .stp.r{gap:9px}.cs .stp.r button{width:40px}
+.cs .cnt{display:flex;align-items:center;justify-content:space-between;gap:10px}.cs .lb{font-size:13px;color:var(--sub)}.cs .lb small{display:block;font-size:11px;opacity:.75;margin-top:2px}
+.cs .rg{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}.cs .rg span{font-size:13px;color:var(--sub)}.cs .lk{color:#7c8cf8;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;min-height:40px}
+.cs .c5 button:disabled{opacity:.3;cursor:default}.cs .sub2{font-size:12px;color:var(--sub);margin:2px 0 6px}.cs .ex{font-size:12px;color:var(--sub);margin-top:8px}
+.ut{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));max-width:560px;margin:auto;padding:0 14px;display:flex;flex-direction:column;gap:6px;z-index:12;pointer-events:none}.ut .ui{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;background:#2b2f45;color:#fff;border-radius:12px;padding:2px 4px 2px 14px;font-size:14px}.ut button{border:0;background:none;color:#9cb0ff;font-weight:700;min-height:44px;padding:0 12px;cursor:pointer}
+.t small.ns{display:block;color:var(--sub);font-size:10.5px;margin-top:1px}
 .cs .wn{color:var(--amb);font-size:12px;margin-top:10px}.cs .er{color:var(--red);font-size:12px;margin-top:8px}
 .cs .bt2{display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:14px}
 .mi{font-size:12px;color:var(--sub);margin-top:4px}.mi b{color:var(--tx);font-weight:500}.mi .mt{color:#7c8cf8;font-weight:700;font-size:12.5px;margin:10px 0 2px;display:block}.mi div{display:flex;justify-content:space-between;gap:8px}
-@media (prefers-color-scheme:light){.n small.blue,.mi .mt,.cx,.cs .hr b,.cs .hr a,.cs .pl span.f{color:#3b5bdb}.cx{border-color:#3b5bdb}}
+@media (prefers-color-scheme:light){.n small.blue,.mi .mt,.cx,.cs .hr b,.cs .hr a,.cs .lk,.cs .pl span.f{color:#3b5bdb}.cx{border-color:#3b5bdb}}
 </style></head><body>
 <div class="top"><b>통화체크 현황</b><small id="upd">불러오는 중…</small></div>
 <div class="bar2"><div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div><button id="bS" class="ca2 sel" style="display:none">선택</button><button id="bC" class="ca2"><i>⇳</i><span>모두 펼치기</span><u style="display:none">0</u></button></div>
@@ -193,7 +199,7 @@ function line(r) {
   const o = open.has(r.key) && !sel ? ' open' : '';
   const ck = sel ? `<span class="ck${sel.has(r.key) ? ' on' : ''}${canSel(r) ? '' : ' no'}"></span>` : '';   // V119: 선택 모드 체크칸
   return `<div class="ln ${cls[r.level]}${o}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b>${E(r.label)}</b>
-   <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small>${battHtml(r)}${nextHtml(r)}</div></div>
+   <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small><small class="ns">${nsTxt(r)}</small>${battHtml(r)}${nextHtml(r)}</div></div>
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
    <span>기본 전화앱 <b>${r.dialer ? '예' : '아니오'}</b></span><span>소리샘 보호 <b>${r.guard ? '켜짐' : '꺼짐'}</b></span>
@@ -301,6 +307,10 @@ $('bL').onclick = () => { mode = 'list'; $('bL').className = 'on'; $('bT').class
 $('bT').onclick = () => { if (sel) setSel(false); mode = 'table'; $('bT').className = 'on'; $('bL').className = ''; render(); };
 
 // ───── V119: 선택 모드(보기 → 자세히 → 조작) · 원격 '지금 통화 시작' 창 · 관리 정보 ─────
+const SYNC_MIN = 30;   // 다음 동기화 = 마지막 보고 + 30분. 허용 시간대(밖이면 60분)는 행 데이터에 없어 항상 30분으로 계산
+const nextSync = r => r.ts + SYNC_MIN * 60000;
+const nsTxt = r => r.fast === 1 ? '5분마다 확인' : nextSync(r) <= Date.now() ? '다음 곧' : '다음 약 ' + hmK(nextSync(r));   // [2]와 예약 칩 제한이 같은 계산을 씀
+const pc = new Map();   // V120: 취소 대기 중인 명령 id → {t, el} (5초 안에 되돌리기 가능)
 let sel = null, lpFired = false;   // sel = 선택 모드일 때 고른 줄 키(Set), 아니면 null
 const canSel = r => r.fast >= 0;   // V119 이상 앱만 명령을 받을 수 있음
 const CAP = m => m >= 61 ? 10 : m >= 31 ? 8 : m >= 20 ? 6 : m >= 10 ? 5 : 3;   // 앱 AutoLogic.burstMaxCalls 와 같음
@@ -332,7 +342,7 @@ function mgmtHtml(r) {   // 상세: 지금 통화 · 마지막 지금 통화 · 
 function tagSmall(r) {   // 줄 2번째 줄(상태) 한 칸: 진행 중인 원격 명령이 있으면 그걸, 아니면 서버 상태(파랑=지금 통화·예약)
   const c = cmdOf(r.key), now = Date.now();
   if (sel) return `<small class="${canSel(r) ? 'blue' : ''}" style="${canSel(r) ? '' : 'color:var(--sub)'}">${fastS(r)}</small>`;
-  if (c && (c.st === '대기' || c.st === '전달')) return `<small class="blue">${E(cmdLine(c))}${c.st === '대기' && data.canDel ? `<button class="cx" data-cx="${E(c.id)}">취소</button>` : ''}</small>`;
+  if (c && (c.st === '대기' || c.st === '전달') && !pc.has(c.id)) return `<small class="blue">${E(cmdLine(c))}${c.st === '대기' && data.canDel ? `<button class="cx" data-cx="${E(c.id)}">취소</button>` : ''}</small>`;
   if (c && r.level === 2 && (c.st === '거절' || c.st === '만료') && now - (c.upd || c.made) < 1800000) return `<small class="amb">${E(cmdLine(c))}</small>`;
   return null;
 }
@@ -354,28 +364,48 @@ function csCalc() {
   const now = Date.now(), at = cs.res ? Math.floor((now + cs.after * 60000) / 60000) * 60000 : now;
   return { at, cap: CAP(cs.min) };
 }
+const startOf = m => Math.floor((Date.now() + m * 60000) / 60000) * 60000;
+function resBase() { const b = data.rows.filter(r => sel.has(r.key) && r.fast !== 1); return b.length ? Math.max(...b.map(nextSync)) : 0; }   // 고른 '기본' 폰 중 가장 늦은 다음 동기화(없으면 0)
+const afterOk = m => { const b = resBase(); return !b || startOf(m) >= b - 600000; };   // 예약 시각 ≥ 기준 − 10분
+function fixAfter() { if (cs.res && resBase()) { const m = [5, 10, 20, 30, 60].find(afterOk); if (m) cs.after = m; } }   // 기본 선택 = 가능한 가장 이른 칩
+function stepCs(k, dd) {
+  const cap = CAP(cs.min);
+  if (k === 'ab') cs.a = cs.b = Math.min(cap, Math.max(1, cs.a + dd));
+  else if (k === 'a') cs.a = Math.min(cs.b, Math.max(1, cs.a + dd));
+  else cs.b = Math.min(cap, Math.max(cs.a, cs.b + dd));
+}
 function drawCs() {   // 아래에서 올라오는 'n대에 통화 시작' 창
   let el = $('cs');
   if (!cs || !sel || !data) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'cs'; el.className = 'cs'; document.body.appendChild(el); }
+  const sh0 = el.querySelector('.sheet'), top0 = sh0 ? sh0.scrollTop : 0;
   const R = data.rows.filter(r => sel.has(r.key)), n = R.length, { at, cap } = csCalc();
-  const c5 = (opts, v, k) => `<div class="c5">${opts.map(x => `<button class="${x === v ? 'on' : ''}" data-c5="${k}" data-v="${x}">${mL(x)}</button>`).join('')}</div>`;
-  const okM = cs.min >= 5 && cs.min <= 240, okA = !cs.res || (cs.after >= 1 && cs.after <= 240), okC = cs.a >= 1 && cs.b >= cs.a && cs.b <= cap;
-  const slow = cs.res && cs.after < 30 ? R.filter(r => r.fast !== 1) : [];
-  const warn = slow.length ? `<div class="wn">⚠ ${slow.length === 1 ? E(String(slow[0].full).toUpperCase()) + '는' : '기본 ' + slow.length + '대는'} '기본'이라 ${hmK(at)}보다 늦게 받으면 받는 즉시 시작해요</div>` : '';
-  const stp = (lab, v, k, lo, hi) => `<div class="stp">${lab ? `<i>${lab}</i>` : ''}<button data-st="${k}" data-d="-1"${v <= lo ? ' disabled' : ''}>−</button><b>${v}회</b><button data-st="${k}" data-d="1"${v >= hi ? ' disabled' : ''}>+</button></div>`;
+  const nF = R.filter(r => r.fast === 1).length, nB = n - nF, base = resBase(), now = Date.now();
+  const c5 = (opts, v, k, dis) => `<div class="c5">${opts.map(x => `<button class="${x === v ? 'on' : ''}" data-c5="${k}" data-v="${x}"${dis && dis(x) ? ' disabled' : ''}>${mL(x)}</button>`).join('')}</div>`;
+  const lim = cs.res && base ? base - 600000 : 0;
+  const okM = cs.min >= 5 && cs.min <= 240, okA0 = !cs.res || (cs.after >= 1 && cs.after <= 240), okL = !lim || at >= lim, okA = okA0 && okL, okC = cs.a >= 1 && cs.b >= cs.a && cs.b <= cap;
+  const warn = cs.res && base > now ? `<div class="wn">기본 폰 포함 · ${hmK(base)} 이후부터 예약 가능</div>` : '';
+  const est = !cs.res ? `<div class="ex">${base ? '예상 시작 ' + (base <= now ? '곧' : '약 ' + hmK(base)) + ' (기본 폰은 다음 동기화 때)' : '예상 시작 약 5분 안에'}</div>` : '';
+  const stp = (v, k, lo, hi, c) => `<div class="stp${c || ''}"><button data-st="${k}" data-d="-1"${v <= lo ? ' disabled' : ''}>−</button><b>${v}회</b><button data-st="${k}" data-d="1"${v >= hi ? ' disabled' : ''}>+</button></div>`;
+  const lbl = `기본 ${DEF(cs.min)} · 최대 ${cap}`;
+  const cntH = cs.range
+    ? `<div class="hr" style="margin-bottom:2px"><span class="lb" style="margin:0">횟수 <small style="display:inline">${lbl}</small></span></div><div class="rg"><span>최소</span>${stp(cs.a, 'a', 1, Math.min(cs.b, cap), ' r')}<span>최대</span>${stp(cs.b, 'b', cs.a, cap, ' r')}<a class="lk" data-ed="range">◂ 한 숫자로</a></div>`
+    : `<div class="hr" style="margin-bottom:0"></div><div class="cnt"><div class="lb">횟수<small>${lbl}</small></div>${stp(cs.a, 'ab', 1, cap)}</div><a class="lk" data-ed="range">범위로 ▸</a>`;
+  const sub = [nF ? '빨리 받기 ' + nF : '', nB ? '기본 ' + nB : ''].filter(Boolean).join(' · ');
   el.innerHTML = `<div class="ov" data-csx="1"></div><div class="sheet"><div class="hd2"></div>
    <div class="ttl"><b>${n}대에 통화 시작</b><i data-csx="1">✕</i></div>
+   <div class="sub2">${sub}</div>
    ${R.map(r => `<div class="pl">${E(String(r.full).toUpperCase())}<span class="${r.fast === 1 ? 'f' : ''}">${r.fast === 1 ? '빨리 받기 · 최대 5분' : '기본 · 최대 30분'}</span></div>`).join('')}
-   <div class="hr">언제 시작<b>${cs.res ? (okA ? cs.after + '분 뒤 · ' + hmK(at) : '—') : '바로'}</b>${cs.res ? `<a data-ed="after">${cs.edA ? '닫기' : '직접 입력'}</a>` : ''}</div>
+   <div class="hr">언제 시작<b>${cs.res ? (okA0 ? cs.after + '분 뒤 · ' + hmK(at) : '—') : '바로'}</b>${cs.res ? `<a data-ed="after">${cs.edA ? '닫기' : '직접 입력'}</a>` : ''}</div>
    <div class="seg2"><button data-res="0" class="${cs.res ? '' : 'on'}">바로 시작</button><button data-res="1" class="${cs.res ? 'on' : ''}">예약 시작</button></div>
-   ${cs.res ? (cs.edA ? `<input type="number" inputmode="numeric" min="1" max="240" data-in="after" value="${cs.after}" placeholder="1~240분">` : '') + c5([5, 10, 20, 30, 60], cs.after, 'after') : ''}
+   ${est}${warn}
+   ${cs.res ? (cs.edA ? `<input type="number" inputmode="numeric" min="1" max="240" data-in="after" value="${cs.after}" placeholder="1~240분">` : '') + c5([5, 10, 20, 30, 60], cs.after, 'after', m => !afterOk(m)) : ''}
    <div class="hr">몇 분 동안<b>${okM ? cs.min + '분' : '—'}</b><a data-ed="min">${cs.edM ? '닫기' : '직접 입력'}</a></div>
    ${cs.edM ? `<input type="number" inputmode="numeric" min="5" max="240" data-in="min" value="${cs.min}" placeholder="5~240분">` : ''}${c5([5, 10, 30, 60, 120], cs.min, 'min')}
-   <div class="hr">횟수 (${okM ? cs.min + '분은 최대 ' + cap + '회' : '5~240분'})<a data-ed="range">${cs.range ? '◂ 한 숫자로' : '범위로 ▸'}</a></div>
-   ${cs.range ? stp('최소', cs.a, 'a', 1, Math.min(cs.b, cap)) + '<div style="height:6px"></div>' + stp('최대', cs.b, 'b', cs.a, cap) : stp('', cs.a, 'ab', 1, cap)}
-   ${warn}${cs.err ? `<div class="er">${E(cs.err)}</div>` : ''}${!okA ? '<div class="er">몇 분 뒤는 1~240분</div>' : !okM ? '<div class="er">시간은 5~240분</div>' : !okC ? `<div class="er">${cs.min}분은 최대 ${cap}회</div>` : ''}
+   ${cntH}
+   ${cs.err ? `<div class="er">${E(cs.err)}</div>` : ''}${!okA0 ? '<div class="er">몇 분 뒤는 1~240분</div>' : !okL ? `<div class="er">기본 폰은 다음 동기화(약 ${hmK(base)}) 전에는 받을 수 없어 ${hmK(lim)} 이전은 예약할 수 없어요</div>` : !okM ? '<div class="er">시간은 5~240분</div>' : !okC ? `<div class="er">${cs.min}분은 최대 ${cap}회</div>` : ''}
    <div class="bt2"><button class="b0" data-csx="1">취소</button><button class="b1" data-go="1"${okA && okM && okC && n && !cs.busy ? '' : ' disabled'}>${cs.busy ? '보내는 중…' : cs.res ? n + '대 · ' + hmK(at) + ' 예약' : n + '대 시작'}</button></div></div>`;
+  const sh1 = el.querySelector('.sheet'); if (sh1) sh1.scrollTop = top0;
 }
 function csSend() {
   const R = data.rows.filter(r => sel.has(r.key)), { at } = csCalc();
@@ -392,23 +422,22 @@ document.addEventListener('click', e => {   // 선택 모드·창 (기존 클릭
   if (lpFired) { lpFired = false; e.stopImmediatePropagation(); return; }
   if (t.closest('#bS')) { setSel(!sel); e.stopImmediatePropagation(); return; }
   const cx = t.closest('.cx');
-  if (cx) { e.stopImmediatePropagation(); cx.disabled = true; fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&cmd=cancel&id=' + encodeURIComponent(cx.dataset.cx)).then(r => r.json()).then(x => { if (!x.ok) $('upd').textContent = '취소 실패: ' + (x.error || ''); load(); }).catch(() => load()); return; }
+  const un = t.closest('[data-un]');
+  if (un) { e.stopImmediatePropagation(); const p = pc.get(un.dataset.un); if (p) { clearTimeout(p.t); p.el.remove(); pc.delete(un.dataset.un); render(); } return; }
+  if (cx) { e.stopImmediatePropagation(); cxQueue(cx.dataset.cx); return; }
   const sb = t.closest('[data-sb]');
-  if (sb) { e.stopImmediatePropagation(); if (sb.dataset.sb === 'x') setSel(false); else { cs = Object.assign(csDef(), { err: '', busy: false, edA: false, edM: false }); if (cs.b > CAP(cs.min)) cs.a = cs.b = DEF(cs.min); drawCs(); } return; }
+  if (sb) { e.stopImmediatePropagation(); if (sb.dataset.sb === 'x') setSel(false); else { cs = Object.assign(csDef(), { err: '', busy: false, edA: false, edM: false }); if (cs.b > CAP(cs.min)) cs.a = cs.b = DEF(cs.min); fixAfter(); drawCs(); } return; }
   if (t.closest('#cs')) {
     e.stopImmediatePropagation();
     if (t.closest('[data-csx]')) { cs = null; drawCs(); return; }
     if (cs.busy) return;
     const d = t.closest('button, a'); if (!d) return;
-    if (d.dataset.res) cs.res = d.dataset.res === '1';
-    else if (d.dataset.c5) { const v = +d.dataset.v; if (d.dataset.c5 === 'min') { cs.min = v; cs.a = cs.b = DEF(v); } else cs.after = v; }
+    if (d.dataset.res) { cs.res = d.dataset.res === '1'; if (cs.res) fixAfter(); }
+    else if (d.dataset.c5) { if (d.disabled) return; const v = +d.dataset.v; if (d.dataset.c5 === 'min') { cs.min = v; cs.a = cs.b = DEF(v); } else cs.after = v; }
     else if (d.dataset.ed === 'after') cs.edA = !cs.edA;
     else if (d.dataset.ed === 'min') cs.edM = !cs.edM;
     else if (d.dataset.ed === 'range') { cs.range = !cs.range; if (!cs.range) cs.b = cs.a; }
-    else if (d.dataset.st) { const k = d.dataset.st, dd = +d.dataset.d, cap = CAP(cs.min);
-      if (k === 'ab') cs.a = cs.b = Math.min(cap, Math.max(1, cs.a + dd));
-      else if (k === 'a') cs.a = Math.min(cs.b, Math.max(1, cs.a + dd));
-      else cs.b = Math.min(cap, Math.max(cs.a, cs.b + dd)); }
+    else if (d.dataset.st) { if (e.detail === 0) stepCs(d.dataset.st, +d.dataset.d); else return; }   // 마우스·터치는 pointerdown 에서 처리(길게 누르면 반복), 키보드만 여기서
     else if (d.dataset.go) { csSend(); return; }
     cs.err = ''; drawCs(); return;
   }
@@ -426,6 +455,28 @@ document.addEventListener('input', e => {   // 직접 입력 칸 (창을 다시 
   if (i.dataset.in === 'after') cs.after = v; else { cs.min = v; if (v >= 5 && v <= 240) cs.a = cs.b = DEF(v); }
   clearTimeout(i._t); i._t = setTimeout(() => { const k = i.dataset.in, p = i.selectionStart; drawCs(); const j = document.querySelector(`#cs input[data-in="${k}"]`); if (j) { j.focus(); try { j.setSelectionRange(p, p); } catch (x) {} } }, 350);
 });
+function cxSend(id) { fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&cmd=cancel&id=' + encodeURIComponent(id), { keepalive: true }).then(r => r.json()).then(x => { if (!x.ok) $('upd').textContent = '취소 실패: ' + (x.error || ''); load(); }).catch(() => load()); }
+function cxQueue(id) {   // V120: 취소 명령은 5초 뒤에 보냄 — 그 안에 [되돌리기]를 누르면 보내지 않음
+  if (pc.has(id)) return;
+  const c = data && data.cmds ? data.cmds.find(x => x.id === id) : null;
+  let box = $('ut'); if (!box) { box = document.createElement('div'); box.id = 'ut'; box.className = 'ut'; document.body.appendChild(box); }
+  const el = document.createElement('div'); el.className = 'ui';
+  el.innerHTML = `<span>${c && c.kind === '예약' ? hmK(c.at) + ' 예약' : '바로 시작'} 취소</span><button data-un="${E(id)}">되돌리기</button>`;
+  box.appendChild(el);
+  const t = setTimeout(() => { pc.delete(id); el.remove(); cxSend(id); }, 5000);
+  pc.set(id, { t, el });
+  render();
+}
+window.addEventListener('pagehide', () => { pc.forEach((p, id) => { clearTimeout(p.t); cxSend(id); }); pc.clear(); });   // 5초 안에 페이지를 닫아도 취소는 보냄
+let stT = null, stI = null;   // 스테퍼 길게 누르기 반복
+function stopSt() { clearTimeout(stT); clearInterval(stI); stT = stI = null; }
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('#cs [data-st]'); if (!b || b.disabled || !cs || cs.busy) return;
+  const k = b.dataset.st, d = +b.dataset.d, go = () => { const a0 = cs.a + ',' + cs.b; stepCs(k, d); cs.err = ''; drawCs(); return a0 !== cs.a + ',' + cs.b; };
+  go();
+  stT = setTimeout(() => { stI = setInterval(() => { if (!go()) stopSt(); }, 90); }, 400);
+});
+['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, stopSt, true));
 let lpT = null, lpX = 0, lpY = 0;   // 줄 길게 누르기 → 선택 모드
 document.addEventListener('pointerdown', e => {
   const lh = e.target.closest('.lh'); if (!lh || sel || !data || !data.canDel || mode !== 'list') return;
@@ -434,7 +485,7 @@ document.addEventListener('pointerdown', e => {
 });
 ['pointerup', 'pointercancel', 'scroll'].forEach(ev => document.addEventListener(ev, () => { if (lpT) { clearTimeout(lpT); lpT = null; } if (lpFired && ev !== 'scroll') setTimeout(() => { lpFired = false; }, 0); }, true));   // 길게 누른 뒤 손을 떼면 뒤따르는 클릭 1번만 무시
 document.addEventListener('pointermove', e => { if (lpT && Math.abs(e.clientX - lpX) + Math.abs(e.clientY - lpY) > 12) { clearTimeout(lpT); lpT = null; } });
-document.addEventListener('contextmenu', e => { if (e.target.closest('.lh')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('.lh, .stp')) e.preventDefault(); });
 window.onerror = (m) => { $('upd').textContent = '화면 오류: ' + m; };
 if (!KEY || URL_.indexOf('http') !== 0) $('upd').textContent = !KEY ? '주소 뒤에 #보기키 를 붙여 주세요' : '웹 앱 주소(URL_)가 비어 있어요';
 else { load(); setInterval(load, 15000); }
