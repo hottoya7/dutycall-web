@@ -104,7 +104,7 @@ body.sm{padding-bottom:84px}
 .cs .rg{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:6px}.cs .rg span{font-size:13px;color:var(--sub)}.cs .lk{color:#7c8cf8;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;min-height:40px}
 .cs .c5 button:disabled{opacity:.3;cursor:default}.cs .sub2{font-size:12px;color:var(--sub);margin:2px 0 6px}.cs .ex{font-size:12px;color:var(--sub);margin-top:8px}
 .ut{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));max-width:560px;margin:auto;padding:0 14px;display:flex;flex-direction:column;gap:6px;z-index:12;pointer-events:none}.ut .ui{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;background:#2b2f45;color:#fff;border-radius:12px;padding:2px 4px 2px 14px;font-size:14px}.ut button{border:0;background:none;color:#9cb0ff;font-weight:700;min-height:44px;padding:0 12px;cursor:pointer}
-.t small.ns{display:block;color:var(--sub);font-size:10.5px;margin-top:1px}
+.t small.ns{display:inline;color:var(--sub);font-size:10.5px;white-space:nowrap}.t small.ns::before{content:' · '}.t small.sy{white-space:nowrap}
 .cs .wn{color:var(--amb);font-size:12px;margin-top:10px}.cs .er{color:var(--red);font-size:12px;margin-top:8px}
 .cs .bt2{display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:14px}
 .mi{font-size:12px;color:var(--sub);margin-top:4px}.mi b{color:var(--tx);font-weight:500}.mi .mt{color:#7c8cf8;font-weight:700;font-size:12.5px;margin:10px 0 2px;display:block}.mi div{display:flex;justify-content:space-between;gap:8px}
@@ -358,7 +358,7 @@ $('bT').onclick = () => { if (sel) setSel(false); mode = 'table'; $('bT').classN
 // ───── V119: 선택 모드(보기 → 자세히 → 조작) · 원격 '지금 통화 시작' 창 · 관리 정보 ─────
 const SYNC_MIN = 30;   // 다음 동기화 = 마지막 보고 + 30분. 허용 시간대(밖이면 60분)는 행 데이터에 없어 항상 30분으로 계산
 const nextSync = r => r.ts + SYNC_MIN * 60000;
-const nsTxt = r => r.fast === 1 ? '5분마다 확인' : nextSync(r) <= Date.now() ? '다음 곧' : '다음 약 ' + hmK(nextSync(r));   // [2]와 예약 칩 제한이 같은 계산을 씀
+const nsTxt = r => r.fast === 1 ? '5분마다 확인' : nextSync(r) <= Date.now() ? '다음 곧' : '다음 ' + hmK(nextSync(r));   // [2]와 예약 칩 제한이 같은 계산을 씀
 const pc = new Map();   // V120: 취소 대기 중인 명령 id → {t, el} (5초 안에 되돌리기 가능)
 let sel = null, lpFired = false;   // sel = 선택 모드일 때 고른 줄 키(Set), 아니면 null
 const canSel = r => r.fast >= 0;   // V119 이상 앱만 명령을 받을 수 있음
