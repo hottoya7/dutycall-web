@@ -116,7 +116,8 @@ table.tb{table-layout:fixed}.tb th,.tb td{padding:9px 2px;white-space:nowrap;ove
 #ch .ov,#ch .sheet{z-index:9}#ch .sheet{max-height:85vh;overflow:auto}#ch.an .sheet{animation:chup .22s ease-out}@keyframes chup{from{transform:translateY(100%)}}
 .chh{display:flex;align-items:center;gap:4px;margin-bottom:6px}.chh i{font-style:normal;color:var(--sub);font-size:18px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.chs{flex:1;display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}.chs button{flex:1;border:0;background:none;color:var(--sub);min-height:40px;border-radius:9px;font-size:14px;cursor:pointer}.chs .on{background:#5b6cf0;color:#fff;font-weight:700}
 .cl>div{display:grid;grid-template-columns:78px 1fr auto;gap:8px;align-items:center;padding:10px 0;font-size:12.5px;cursor:pointer}.cl>div+div{border-top:1px solid var(--line)}.cl .w{color:var(--sub)}.cl .w.f{color:#7c8cf8;font-weight:700}.cl b{text-transform:uppercase}.cl small{color:var(--sub);font-size:11px;margin-left:4px}.cl .r{font-size:11.5px;color:var(--sub);text-align:right}.cl .r.x{color:var(--red)}.cl .e{display:block;padding:18px 0;text-align:center;color:var(--sub);cursor:default}
-@media (prefers-color-scheme:light){.nxc.on{border-color:#3b5bdb}.cl .w.f,.tb .nx1{color:#3b5bdb}}
+.cl.A>div{border-top:0;margin-bottom:3px;padding:9px 8px;border-radius:8px}.cl.A .o{background:rgba(91,108,240,.17);border-left:3px solid #5b6cf0}.cl.A .o .r{color:#c9d0ff;font-weight:700}.cl.A .o.bad{background:rgba(255,107,94,.14);border-left-color:var(--red)}.cl.A .o.bad .r{color:var(--red)}.cl.A .i{margin-left:26px;opacity:.78;padding-top:6px;padding-bottom:6px;border-left:2px solid var(--line)}.cl.A .i b{font-weight:500}
+@media (prefers-color-scheme:light){.nxc.on{border-color:#3b5bdb}.cl .w.f,.tb .nx1{color:#3b5bdb}.cl.A .o{background:rgba(59,91,219,.1);border-left-color:#3b5bdb}.cl.A .o .r{color:#2a45b0}}
 
 /* V128 변경일·해지일 경고색: D-3~전날 주황, 당일 빨강 */
 .ln.al1,.ln.al1.open,.tb tr.al1{background:rgba(255,167,38,.22)}.ln.al2,.ln.al2.open,.tb tr.al2{background:rgba(229,57,53,.22)}
@@ -198,10 +199,11 @@ function drawCh() {   // V127: 통화 예정·최근 통화 목록 창(바깥·�
   if (!chOpen || !data) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'ch'; el.className = 'an'; document.body.appendChild(el); setTimeout(() => el.classList.remove('an'), 300); }
   const old = el.querySelector('.sheet'), top0 = old ? old.scrollTop : 0, R = data.rows, now = Date.now(), a = chTab === 'up';
-  const row = (t, r, rt, x, f) => `<div data-go="${E(r.key)}"><span class="w${f ? ' f' : ''}">${nxS(t)}</span><span><b>${E(r.label)}</b><small>${E(r.group)}</small></span><span class="r${x ? ' x' : ''}">${rt}</span></div>`;
+  const dh = t => dayK(t) + ' ' + hmK(t);   // V129: 오늘·어제·날짜 + 시각
+  const row = (t, r, rt, x, f, cls) => `<div${cls ? ' class="' + cls + '"' : ''} data-go="${E(r.key)}"><span class="w${f ? ' f' : ''}">${dh(t)}</span><span><b>${E(r.label)}</b><small>${E(r.group)}</small></span><span class="r${x ? ' x' : ''}">${rt}</span></div>`;
   const L = a ? upList(R).map((r, i) => row(r.nextAt, r, untilK(r.nextAt - now), 0, !i))
-    : rcList(R).map(({ c, r }) => row(c.t, r, (c.k === 'O' ? '발신 ' : '수신 ') + rcRes(c), c.s <= 0, 0));
-  el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up"${a ? ' class="on"' : ''}>통화 예정</button><button data-ct="rc"${a ? '' : ' class="on"'}>최근 통화</button></div><i data-chx aria-label="닫기">✕</i></div><div class="cl">${L.join('') || `<div class="e">${a ? '예정된 통화가 없어요' : '최근 통화 기록이 없어요'}</div>`}</div></div>`;
+    : rcList(R).map(({ c, r }) => row(c.t, r, (c.k === 'O' ? '↗ 발신 ' : '↙ 수신 ') + rcRes(c), c.s <= 0, 0, (c.k === 'O' ? 'o' : 'i') + (c.k === 'O' && c.s <= 0 ? ' bad' : '')));   // V129: 발신 강조·수신 들여쓰기
+  el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up"${a ? ' class="on"' : ''}>통화 예정</button><button data-ct="rc"${a ? '' : ' class="on"'}>최근 통화</button></div><i data-chx aria-label="닫기">✕</i></div><div class="cl${a ? '' : ' A'}">${L.join('') || `<div class="e">${a ? '예정된 통화가 없어요' : '최근 통화 기록이 없어요'}</div>`}</div></div>`;
   const s = el.querySelector('.sheet'); if (s) s.scrollTop = top0;
 }
 function goLine(key) {   // V127: 표·목록 창의 줄 → 카드 목록의 그 회선(그룹·상세 펼침, 잠깐 테두리 강조)
