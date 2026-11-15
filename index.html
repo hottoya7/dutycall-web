@@ -86,7 +86,10 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .lh.s{grid-template-columns:30px fit-content(38%) 1fr auto}
 .ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--sub);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700}
 .ck.on{background:#5b6cf0;border-color:#5b6cf0}.ck.on::after{content:'✓'}.ck.no{opacity:.3}
-.ga{border:0;background:none;color:inherit;font-size:12px;font-weight:700;padding:0 8px;min-height:44px;cursor:pointer}
+.ga{border:0;background:rgba(124,140,248,.16);color:inherit;font-size:14px;font-weight:700;padding:0 12px 0 6px;min-height:44px;margin-left:6px;border-radius:12px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+body.sm .gh .gn{flex:0 1 auto}body.sm .gh .gi{margin-left:auto}.ck.part{background:#5b6cf0;border-color:#5b6cf0}.ck.part::after{content:'▬';font-size:11px}
+.sbar{flex-wrap:wrap}.sbar .l2{display:flex;gap:8px;width:100%}.sbar .l2 button{flex:1}.sbar .tg{font-size:11px;background:#5b6cf0;color:#fff;padding:2px 8px;border-radius:8px;margin-left:6px;font-weight:700}
+.bw{background:rgba(255,107,94,.18);color:#ff9d92;border:1px solid #ff6b5e!important}
 .sbar{position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:auto;display:flex;gap:8px;align-items:center;background:var(--card);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:8}
 .sbar b{flex:1;font-size:14px}.sbar button,.cs .bt2 button{border:0;border-radius:12px;min-height:46px;padding:0 16px;font-size:14px;font-weight:700;cursor:pointer}
 .b0{background:var(--line);color:var(--tx)}.b1{background:#5b6cf0;color:#fff}.b1:disabled{opacity:.4;cursor:default}
@@ -116,7 +119,7 @@ table.tb{table-layout:fixed}.tb th,.tb td{padding:9px 2px;white-space:nowrap;ove
 #ch .ov,#ch .sheet{z-index:9}#ch .sheet{max-height:85vh;overflow:auto}#ch.an .sheet{animation:chup .22s ease-out}@keyframes chup{from{transform:translateY(100%)}}
 .chh{display:flex;align-items:center;gap:4px;margin-bottom:6px}.chh i{font-style:normal;color:var(--sub);font-size:18px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.chs{flex:1;display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}.chs button{flex:1;border:0;background:none;color:var(--sub);min-height:40px;border-radius:9px;font-size:14px;cursor:pointer}.chs .on{background:#5b6cf0;color:#fff;font-weight:700}
 .cl>div{display:grid;grid-template-columns:78px 1fr auto;gap:8px;align-items:center;padding:10px 0;font-size:12.5px;cursor:pointer}.cl>div+div{border-top:1px solid var(--line)}.cl .w{color:var(--sub)}.cl .w.f{color:#7c8cf8;font-weight:700}.cl b{text-transform:uppercase}.cl small{color:var(--sub);font-size:11px;margin-left:4px}.cl .r{font-size:11.5px;color:var(--sub);text-align:right}.cl .r.x{color:var(--red)}.cl .e{display:block;padding:18px 0;text-align:center;color:var(--sub);cursor:default}
-.cl.A>div{border-top:0;margin-bottom:3px;padding:9px 8px;border-radius:8px}.cl.A .o{background:rgba(91,108,240,.17);border-left:3px solid #5b6cf0}.cl.A .o .r{color:#c9d0ff;font-weight:700}.cl.A .o.bad{background:rgba(255,107,94,.14);border-left-color:var(--red)}.cl.A .o.bad .r{color:var(--red)}.cl.A .i{margin-left:26px;opacity:.78;padding-top:6px;padding-bottom:6px;border-left:2px solid var(--line)}.cl.A .i b{font-weight:500}
+.cl.A>div{border-top:0;margin-bottom:3px;padding:9px 8px;border-radius:8px}.cl.A .o{background:rgba(91,108,240,.17);border-left:3px solid #5b6cf0}.cl.A .o .r{color:#c9d0ff;font-weight:700}.cl.A .o.bad{background:rgba(255,107,94,.14);border-left-color:var(--red)}.cl.A .o.bad .r{color:var(--red)}.cl.A .i{margin-left:26px;opacity:.78;padding-top:6px;padding-bottom:6px;border-left:2px solid var(--line)}.cl.A .i b{font-weight:500}.cl.A>div.gd{margin-bottom:9px}
 @media (prefers-color-scheme:light){.nxc.on{border-color:#3b5bdb}.cl .w.f,.tb .nx1{color:#3b5bdb}.cl.A .o{background:rgba(59,91,219,.1);border-left-color:#3b5bdb}.cl.A .o .r{color:#2a45b0}}
 
 /* V128 변경일·해지일 경고색: D-3~전날 주황, 당일 빨강 */
@@ -180,7 +183,26 @@ function nextHtml(r) { return hasNx(r) ? `<span class="nt" data-nx="${E(r.key)}"
 // V127: 다음 통화 박스를 좌우 탭(통화 예정 / 최근 통화)으로 — 고른 탭이 3/4 폭, 누르면 아래에서 올라오는 목록 창(10건)
 let chTab = 'up', chOpen = false;
 const upList = R => R.filter(hasNx).sort((a, b) => a.nextAt - b.nextAt).slice(0, 10);
-const rcList = R => R.filter(r => r.recentKnown).flatMap(r => r.recent.map(c => ({ c, r }))).sort((a, b) => b.c.t - a.c.t).slice(0, 10);
+const rcList = R => {   // V133: 발신 아래에 짝 수신(시각 90초·통화시간 5초 이내)을 붙여 한 덩어리로, 덩어리는 발신 시각 최신순
+  const all = R.filter(r => r.recentKnown).flatMap(r => r.recent.map(c => ({ c, r }))).sort((a, b) => b.c.t - a.c.t).slice(0, 40);
+  const used = new Set(), G = [];
+  all.forEach(x => {
+    if (x.c.k !== 'O') return;
+    let best = null, bd = 1e12;
+    all.forEach(y => {
+      if (used.has(y) || y.c.k !== 'I' || y.r.key === x.r.key || x.c.s <= 0 || y.c.s <= 0) return;
+      const dt = Math.abs(y.c.t - x.c.t), ds = Math.abs(y.c.s - x.c.s);
+      if (dt <= 90000 && ds <= 5 && dt + ds * 1000 < bd) { best = y; bd = dt + ds * 1000; }
+    });
+    if (best) used.add(best);
+    used.add(x); G.push({ t: x.c.t, list: best ? [x, Object.assign({ pair: 1 }, best)] : [x] });
+  });
+  all.forEach(x => { if (!used.has(x)) G.push({ t: x.c.t, list: [x] }); });
+  G.sort((a, b) => b.t - a.t);
+  const out = [];
+  for (const g of G) { if (out.length >= 10) break; g.list.forEach((x, i) => out.push(i === g.list.length - 1 ? Object.assign({ end: 1 }, x) : x)); }
+  return out;
+};
 const rcRes = c => c.s > 0 ? durK(c.s) : (c.k === 'M' ? '부재중' : '연결 안 됨');
 function nextTopHtml(R) {
   const U = upList(R), L = rcList(R); if (!U.length && !L.length) return '';
@@ -200,9 +222,9 @@ function drawCh() {   // V127: 통화 예정·최근 통화 목록 창(바깥·�
   if (!el) { el = document.createElement('div'); el.id = 'ch'; el.className = 'an'; document.body.appendChild(el); setTimeout(() => el.classList.remove('an'), 300); }
   const old = el.querySelector('.sheet'), top0 = old ? old.scrollTop : 0, R = data.rows, now = Date.now(), a = chTab === 'up';
   const dh = t => dayK(t) + ' ' + hmK(t);   // V129: 오늘·어제·날짜 + 시각
-  const row = (t, r, rt, x, f, cls) => `<div${cls ? ' class="' + cls + '"' : ''} data-go="${E(r.key)}"><span class="w${f ? ' f' : ''}">${dh(t)}</span><span><b>${E(r.label)}</b><small>${E(r.group)}</small></span><span class="r${x ? ' x' : ''}">${rt}</span></div>`;
+  const row = (t, r, rt, x, f, cls, hm) => `<div${cls ? ' class="' + cls + '"' : ''} data-go="${E(r.key)}"><span class="w${f ? ' f' : ''}">${hm ? hmK(t) : dh(t)}</span><span><b>${E(r.label)}</b><small>${E(r.group)}</small></span><span class="r${x ? ' x' : ''}">${rt}</span></div>`;
   const L = a ? upList(R).map((r, i) => row(r.nextAt, r, untilK(r.nextAt - now), 0, !i))
-    : rcList(R).map(({ c, r }) => row(c.t, r, (c.k === 'O' ? '↗ 발신 ' : '↙ 수신 ') + rcRes(c), c.s <= 0, 0, (c.k === 'O' ? 'o' : 'i') + (c.k === 'O' && c.s <= 0 ? ' bad' : '')));   // V129: 발신 강조·수신 들여쓰기
+    : rcList(R).map(({ c, r, pair, end }) => row(c.t, r, (c.k === 'O' ? '↗ 발신 ' : '↙ 수신 ') + rcRes(c), c.s <= 0, 0, (c.k === 'O' ? 'o' : 'i') + (c.k === 'O' && c.s <= 0 ? ' bad' : '') + (end ? ' gd' : ''), pair));   // V129: 발신 강조·수신 들여쓰기
   el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up"${a ? ' class="on"' : ''}>통화 예정</button><button data-ct="rc"${a ? '' : ' class="on"'}>최근 통화</button></div><i data-chx aria-label="닫기">✕</i></div><div class="cl${a ? '' : ' A'}">${L.join('') || `<div class="e">${a ? '예정된 통화가 없어요' : '최근 통화 기록이 없어요'}</div>`}</div></div>`;
   const s = el.querySelector('.sheet'); if (s) s.scrollTop = top0;
 }
@@ -288,7 +310,7 @@ function groupHtml(g) {
   const sh = shut.has(g.name) ? ' shut' : '';
   const p = grpPeriod(g.list), io = p && pInfo.has(g.name);   // V118: ⓘ 회선 기간 (제목줄 누름=접기·펼치기 그대로, ⓘ만 기간 막대)
   const ib = p ? `<button class="ib${io ? ' on' : ''}" data-pi="${E(g.name)}" aria-label="회선 기간 ${io ? '닫기' : '보기'}${chgSoon(p) ? ' · 요금제 변경 임박' : ''}" aria-expanded="${io ? 'true' : 'false'}"><i>i</i>${chgSoon(p) ? '<u></u>' : ''}</button>` : '';
-  return `<div class="gp${sh}" data-g="${E(g.name)}"><div class="gh" role="button" aria-expanded="${sh ? 'false' : 'true'}"><div class="gn">${E(g.name)}</div><span class="gi">${info}</span>${sel ? (() => { const L = g.list.filter(canSel), all = L.length && L.every(r => sel.has(r.key)); return L.length ? `<button class="ga" data-ga="${E(g.name)}">전체 ${all ? '☑' : '☐'}</button>` : ''; })() : ib}<span class="cv">${sh ? '▸' : '▾'}</span></div>${io ? periodHtml(p) : ''}${g.list.map(line).join('')}</div>`;
+  return `<div class="gp${sh}" data-g="${E(g.name)}"><div class="gh" role="button" aria-expanded="${sh ? 'false' : 'true'}"><div class="gn">${E(g.name)}</div>${sel ? (() => { const L = g.list.filter(canSel), n = L.filter(r => sel.has(r.key)).length, st = L.length && n === L.length ? ' on' : n ? ' part' : ''; return L.length ? `<button class="ga" data-ga="${E(g.name)}" aria-label="${E(g.name)} 전체 ${st === ' on' ? '해제' : '선택'}"><span class="ck${st}"></span>전체</button>` : ''; })() : ''}<span class="gi">${info}</span>${sel ? '' : ib}<span class="cv">${sh ? '▸' : '▾'}</span></div>${io ? periodHtml(p) : ''}${g.list.map(line).join('')}</div>`;
 }
 function drawSheet() {   // V115: ▶ 다음 통화 시각을 누르면 뜨는 창(바깥·✕ 누르면 닫힘)
   let el = $('sh');
@@ -297,7 +319,7 @@ function drawSheet() {   // V115: ▶ 다음 통화 시각을 누르면 뜨는 �
   if (!el) { el = document.createElement('div'); el.id = 'sh'; document.body.appendChild(el); }
   el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="ttl"><b>${E(r.label)} · 다음 통화 예정</b><i class="sx">✕</i></div>${nextBox(r)}<div class="m" style="color:var(--sub);font-size:11px;margin-top:10px">자동 발신 기준 · 바깥을 누르면 닫혀요</div></div>`;
 }
-function render() { renderMain(); syncBC(); const bs = $('bS'); if (bs) bs.style.display = data && data.canDel && mode === 'list' ? '' : 'none'; if (sel && data) { data.rows.forEach(r => { if (sel.has(r.key) && !canSel(r)) sel.delete(r.key); }); [...sel].forEach(k => { if (!data.rows.some(r => r.key === k)) sel.delete(k); }); } selBar(); }
+function render() { renderMain(); syncBC(); if (sel) selBar(); const bs = $('bS'); if (bs) bs.style.display = data && data.canDel && mode === 'list' ? '' : 'none'; if (sel && data) { data.rows.forEach(r => { if (sel.has(r.key) && !canSel(r)) sel.delete(r.key); }); [...sel].forEach(k => { if (!data.rows.some(r => r.key === k)) sel.delete(k); }); } selBar(); }
 function albHtml(R) {   // V127: 관리자용 모음 알림 — 변경일·해지일 D-3~당일, 날짜·종류가 같은 그룹은 한 줄
   const m = new Map();
   groups(R).forEach(g => { const p = grpPeriod(g.list); if (!p) return;
@@ -414,18 +436,41 @@ function mgmtHtml(r) {   // 상세: 지금 통화 · 마지막 지금 통화 · 
 }
 function tagSmall(r) {   // 줄 2번째 줄(상태) 한 칸: 진행 중인 원격 명령이 있으면 그걸, 아니면 서버 상태(파랑=지금 통화·예약)
   const c = cmdOf(r.key), now = Date.now();
-  if (sel) return `<small class="${canSel(r) ? 'blue' : ''}" style="${canSel(r) ? '' : 'color:var(--sub)'}">${fastS(r)}</small>`;
   if (c && (c.st === '대기' || c.st === '전달') && !pc.has(c.id)) return `<small class="blue">${E(cmdLine(c))}${c.st === '대기' && data.canDel ? `<button class="cx" data-cx="${E(c.id)}">취소</button>` : ''}</small>`;
+  if (sel && c && pc.has(c.id)) return `<small class="amb">취소됨 · 5초 뒤 전송</small>`;
+  if (sel) return `<small class="${canSel(r) ? 'blue' : ''}" style="${canSel(r) ? '' : 'color:var(--sub)'}">${fastS(r)}</small>`;   // V133: 선택 모드에서도 대기 중인 명령(취소 버튼)은 그대로 보임
   if (c && r.level === 2 && (c.st === '거절' || c.st === '만료') && now - (c.upd || c.made) < 1800000) return `<small class="amb">${E(cmdLine(c))}</small>`;
   return null;
+}
+// V133: 폰 뒤로 가기 — 선택 모드·통화 시작 창·목록 창·다음 통화 창이 열려 있으면 앱이 닫히지 않고 그 창만 닫힘
+let bkOn = false, bkIgn = false;
+function syncBack() {
+  const o = !!(sel || cs || chOpen || sheetKey);
+  if (o && !bkOn) { bkOn = true; try { history.pushState({ dc: 1 }, ''); } catch (x) {} }
+  else if (!o && bkOn) { bkOn = false; bkIgn = true; try { history.back(); } catch (x) { bkIgn = false; } }
+}
+addEventListener('popstate', () => {
+  if (bkIgn) { bkIgn = false; return; }
+  if (!bkOn) return;
+  bkOn = false;
+  if (cs) { cs = null; drawCs(); } else if (chOpen) { chOpen = false; drawCh(); } else if (sheetKey) { sheetKey = null; drawSheet(); } else if (sel) setSel(false);
+  syncBack();
+});
+setInterval(syncBack, 200);
+function pendSel() {   // V133: 선택한 줄 중 취소할 수 있는(대기) 명령 id 목록
+  if (!sel || !data || !data.canDel) return [];
+  return [...sel].map(k => cmdOf(k)).filter(c => c && c.st === '대기' && !pc.has(c.id)).map(c => c.id);
 }
 function selBar() {
   let el = $('sbar');
   document.body.classList.toggle('sm', !!sel);
-  if (!sel) { if (el) el.remove(); return; }
+  if (!sel) { document.body.style.paddingBottom = ''; if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'sbar'; el.className = 'sbar'; document.body.appendChild(el); }
-  const n = sel.size;
-  el.innerHTML = `<b>${n}대 선택</b><button class="b0" data-sb="x">취소</button><button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button>`;
+  const n = sel.size, pd = pendSel();
+  document.body.style.paddingBottom = pd.length ? '150px' : '';
+  el.innerHTML = pd.length
+    ? `<b>${n}대 선택<span class="tg">대기 명령 ${pd.length}</span></b><button class="b0" data-sb="x">선택 해제</button><div class="l2"><button class="bw" data-sb="cxall">대기 명령 ${pd.length}개 취소</button><button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button></div>`
+    : `<b>${n}대 선택</b><button class="b0" data-sb="x">선택 해제</button><button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button>`;
 }
 function setSel(on) {
   sel = on ? (sel || new Set()) : null;
@@ -496,10 +541,10 @@ document.addEventListener('click', e => {   // 선택 모드·창 (기존 클릭
   if (t.closest('#bS')) { setSel(!sel); e.stopImmediatePropagation(); return; }
   const cx = t.closest('.cx');
   const un = t.closest('[data-un]');
-  if (un) { e.stopImmediatePropagation(); const p = pc.get(un.dataset.un); if (p) { clearTimeout(p.t); p.el.remove(); pc.delete(un.dataset.un); render(); } return; }
+  if (un) { e.stopImmediatePropagation(); const p = pc.get(un.dataset.un); if (p) { clearTimeout(p.t); p.el.remove(); (p.ids || [un.dataset.un]).forEach(i => pc.delete(i)); render(); selBar(); } return; }
   if (cx) { e.stopImmediatePropagation(); cxQueue(cx.dataset.cx); return; }
   const sb = t.closest('[data-sb]');
-  if (sb) { e.stopImmediatePropagation(); if (sb.dataset.sb === 'x') setSel(false); else { cs = Object.assign(csDef(), { err: '', busy: false, edA: false, edM: false }); if (cs.b > CAP(cs.min)) cs.a = cs.b = DEF(cs.min); fixAfter(); drawCs(); } return; }
+  if (sb) { e.stopImmediatePropagation(); if (sb.dataset.sb === 'x') setSel(false); else if (sb.dataset.sb === 'cxall') cxQueueAll(pendSel()); else { cs = Object.assign(csDef(), { err: '', busy: false, edA: false, edM: false }); if (cs.b > CAP(cs.min)) cs.a = cs.b = DEF(cs.min); fixAfter(); drawCs(); } return; }
   if (t.closest('#cs')) {
     e.stopImmediatePropagation();
     if (t.closest('[data-csx]')) { cs = null; drawCs(); return; }
@@ -529,6 +574,17 @@ document.addEventListener('input', e => {   // 직접 입력 칸 (창을 다시 
   clearTimeout(i._t); i._t = setTimeout(() => { const k = i.dataset.in, p = i.selectionStart; drawCs(); const j = document.querySelector(`#cs input[data-in="${k}"]`); if (j) { j.focus(); try { j.setSelectionRange(p, p); } catch (x) {} } }, 350);
 });
 function cxSend(id) { fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&cmd=cancel&id=' + encodeURIComponent(id), { keepalive: true }).then(r => r.json()).then(x => { if (!x.ok) $('upd').textContent = '취소 실패: ' + (x.error || ''); load(); }).catch(() => load()); }
+function cxQueueAll(ids) {   // V133: 선택한 줄의 대기 명령을 한꺼번에 취소(5초 뒤 전송, 되돌리기 1번으로 모두 되돌림)
+  ids = ids.filter(id => !pc.has(id)); if (!ids.length) return;
+  if (ids.length === 1) { cxQueue(ids[0]); selBar(); return; }
+  let box = $('ut'); if (!box) { box = document.createElement('div'); box.id = 'ut'; box.className = 'ut'; document.body.appendChild(box); }
+  const el = document.createElement('div'); el.className = 'ui';
+  el.innerHTML = `<span>대기 명령 ${ids.length}개 취소</span><button data-un="${E(ids[0])}">되돌리기</button>`;
+  box.appendChild(el);
+  const t = setTimeout(() => { ids.forEach(id => { pc.delete(id); cxSend(id); }); el.remove(); selBar(); }, 5000);
+  const p = { t, el, ids }; ids.forEach(id => pc.set(id, p));
+  render(); selBar();
+}
 function cxQueue(id) {   // V120: 취소 명령은 5초 뒤에 보냄 — 그 안에 [되돌리기]를 누르면 보내지 않음
   if (pc.has(id)) return;
   const c = data && data.cmds ? data.cmds.find(x => x.id === id) : null;
