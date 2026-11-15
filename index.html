@@ -117,6 +117,7 @@ table.tb{table-layout:fixed}.tb th,.tb td{padding:9px 2px;white-space:nowrap;ove
 .nxs{display:flex;gap:6px;margin-bottom:10px}.nxc{position:relative;flex:1;min-width:0;overflow:hidden;white-space:nowrap;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;transition:flex .2s}.nxc.on{flex:3;border-color:#7c8cf8}.nxc .m{font-size:11.5px;color:var(--sub);overflow:hidden;text-overflow:ellipsis}.nxc.sm .nxb{font-size:14px}.nxb.rb{color:var(--red)}.nxc .rd{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--red)}.uc{text-transform:uppercase}
 .ln{scroll-margin-top:90px}.ln.hl{animation:hl 1.8s ease-out}@keyframes hl{0%,55%{box-shadow:inset 0 0 0 2px #7c8cf8}100%{box-shadow:inset 0 0 0 2px transparent}}
 #ch .ov,#ch .sheet{z-index:9}#ch .sheet{max-height:85vh;display:flex;flex-direction:column;overflow:hidden}#ch .cl{overflow:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+#ch .cl>div.dy{display:flex;justify-content:space-between}.dy em{font-style:normal;color:var(--sub);font-weight:400}.w.nu{color:var(--sub);font-size:11.5px;font-weight:400}
 .cm{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);padding:2px 4px 6px}
 .cl>div.dy,.cl.A>div.dy{display:block;position:sticky;top:0;z-index:1;background:var(--card);color:#7c8cf8;font-weight:700;font-size:11.5px;padding:8px 4px 4px;border-top:0;border-radius:0;margin:0;cursor:default}#ch.an .sheet{animation:chup .22s ease-out}@keyframes chup{from{transform:translateY(100%)}}
 .chh{display:flex;align-items:center;gap:4px;margin-bottom:6px}.chh i{font-style:normal;color:var(--sub);font-size:18px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.chs{flex:1;display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}.chs button{flex:1;border:0;background:none;color:var(--sub);min-height:40px;border-radius:9px;font-size:14px;cursor:pointer}.chs .on{background:#5b6cf0;color:#fff;font-weight:700}
@@ -218,6 +219,23 @@ function nextTopHtml(R) {
     : `<div class="m">최근 통화</div>${l ? `<b class="nxb${l.c.s <= 0 ? ' rb' : ''}">${dayK(l.c.t)} ${hmK(l.c.t)}</b><div class="m">${nm(l.r)} · ${l.c.k === 'O' ? '발신' : '수신'} ${rcRes(l.c)}</div>` : '<b class="nx0">기록 없음</b>'}${dot}`;
   return `<div class="nxs"><div class="nxc ${a ? 'on' : 'sm'}" data-cl="up">${up}</div><div class="nxc ${a ? 'sm' : 'on'}" data-cl="rc">${rc}</div></div>`;
 }
+const dayS = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const upItems = (R, now) => {   // V133: 통화 예정 = 폰당 다음 발신(정확한 시각) + 날짜별 횟수(시각 미정), 최대 50줄
+  const out = [];
+  R.forEach(r => {
+    if (!(r.recentKnown && (r.auto || r.bnow || r.bres))) return;
+    const ex = r.nextAt > now ? r.nextAt : 0, exD = ex ? dayS(ex) : -1, today = dayS(now);
+    if (ex) out.push({ t: ex, d: exD, r, n: 1, ex: 1 });
+    let tdN = (r.nextToday || 0) - (exD === today ? 1 : 0);
+    if (tdN > 0) out.push({ t: today + 86399000, d: today, r, n: tdN, ex: 0 });
+    (r.nextDays || []).forEach(x => {
+      const d = dayS(x.t); if (d <= today) return;
+      const n = x.n - (d === exD ? 1 : 0); if (n > 0) out.push({ t: d + 86399000, d, r, n, ex: 0 });
+    });
+  });
+  out.sort((a, b) => a.d - b.d || b.ex - a.ex || a.t - b.t);
+  return out.slice(0, 50);
+};
 function drawCh() {   // V127: 통화 예정·최근 통화 목록 창(바깥·✕ 누르면 닫힘, 줄을 누르면 그 회선 카드로)
   let el = $('ch');
   if (!chOpen || !data) { if (el) el.remove(); return; }
@@ -226,10 +244,12 @@ function drawCh() {   // V127: 통화 예정·최근 통화 목록 창(바깥·�
   const dh = t => dayK(t) + ' ' + hmK(t);   // V129: 오늘·어제·날짜 + 시각
   const row = (t, r, rt, x, f, cls, hm) => `<div${cls ? ' class="' + cls + '"' : ''} data-go="${E(r.key)}"><span class="w${f ? ' f' : ''}">${hm ? hmK(t) : dh(t)}</span><span><b>${E(r.label)}</b><small>${E(r.group)}</small></span><span class="r${x ? ' x' : ''}">${rt}</span></div>`;
   const dyL = t => { const k = dayK(t), m = mdK(t); return k === m ? k : k + ' · ' + m; };   // V133: 날짜 구분줄(오늘 · 11/16)
-  const items = a ? upList(R).map((r, i) => ({ t: r.nextAt, h: row(r.nextAt, r, untilK(r.nextAt - now), 0, !i, '', 1) }))
+  const UP = a ? upItems(R, now) : [], dayN = {}; UP.forEach(u => { dayN[u.d] = (dayN[u.d] || 0) + u.n; });
+  const items = a ? UP.map((u, i) => ({ t: u.t, d: u.d, h: u.ex ? row(u.t, u.r, untilK(u.t - now), 0, 1, '', 1)
+      : `<div data-go="${E(u.r.key)}"><span class="w nu">시각 미정</span><span><b>${E(u.r.label)}</b><small>${E(u.r.group)}</small></span><span class="r"><span class="cp"><b>${u.n}회</b></span></span></div>` }))
     : rcList(R).map(({ c, r, pair, end }) => ({ t: pair ? 0 : c.t, h: row(c.t, r, (c.k === 'O' ? '↗ 발신 ' : '↙ 수신 ') + rcRes(c), c.s <= 0, 0, (c.k === 'O' ? 'o' : 'i') + (c.k === 'O' && c.s <= 0 ? ' bad' : '') + (end ? ' gd' : ''), 1) }));
   let lastD = ''; const L = [];
-  items.forEach(it => { if (it.t) { const d = dayK(it.t); if (d !== lastD) { L.push(`<div class="dy">${dyL(it.t)}</div>`); lastD = d; } } L.push(it.h); });
+  items.forEach(it => { if (it.t) { const d = dayK(it.t); if (d !== lastD) { L.push(`<div class="dy">${dyL(it.t)}${a ? `<em>${dayN[it.d]}회</em>` : ''}</div>`); lastD = d; } } L.push(it.h); });
   const nRows = items.length, cm = `<div class="cm"><span>${a ? '통화 예정' : '최근 통화'} ${nRows}건</span>${nRows > 8 ? '<span>↕ 위아래로 스크롤</span>' : ''}</div>`;
   el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up"${a ? ' class="on"' : ''}>통화 예정</button><button data-ct="rc"${a ? '' : ' class="on"'}>최근 통화</button></div><i data-chx aria-label="닫기">✕</i></div>${nRows ? cm : ''}<div class="cl${a ? '' : ' A'}">${L.join('') || `<div class="e">${a ? '예정된 통화가 없어요' : '최근 통화 기록이 없어요'}</div>`}</div></div>`;
   const s = el.querySelector('.cl'); if (s) s.scrollTop = top0;
