@@ -341,7 +341,7 @@ function line(r) {
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
    <span>기본 전화앱 <b>${r.dialer ? '예' : '아니오'}</b></span><span>소리샘 보호 <b>${r.guard ? '켜짐' : '꺼짐'}</b></span>
-   <span>마지막 통화 <b>${hm(r.lastCall)}</b></span><span>${E(r.carrier)} <b>${E(r.model)}</b></span>${r.batt >= 0 ? `<span>배터리 <b>${r.batt}%${r.chg ? ' · 충전 중' : ' · 충전 안 함'}</b></span>` : ''}${r.fast >= 0 ? `<span>원격 <b>${r.fast ? '빨리 받기' : '기본'}</b></span>` : ''}</div>${!r.twin || r.main ? mgmtHtml(r) : twinHtml(r)}${planHtml(r)}${!r.twin || r.main ? setupHtml(r) : ''}${data.canDel ? `<button class="dl${armed === r.key ? ' on' : ''}" data-k="${E(r.key)}">${armed === r.key ? '한 번 더 누르면 삭제' : '이 줄 삭제'}</button>` : ''}</div></div>`;
+   <span>마지막 통화 <b>${hm(r.lastCall)}</b></span><span>${E(r.carrier)} <b>${E(r.model)}</b></span>${r.batt >= 0 ? `<span>배터리 <b>${r.batt}%${r.chg ? ' · 충전 중' : ' · 충전 안 함'}</b></span>` : ''}${r.fast >= 0 ? `<span>원격 <b>${r.fast ? '빨리 받기' : '기본'}</b></span>` : ''}</div>${!r.twin || r.main ? mgmtHtml(r) : twinHtml(r)}${planHtml(r)}${!r.twin || r.main ? setupHtml(r) : ''}${data.canDel ? `<button class="dl${armed === r.key ? ' on' : ''}" data-k="${E(r.key)}">${armed === r.key ? '한 번 더 누르면 삭제' : r.twin ? '이 폰 삭제 (SIM 2줄)' : '이 줄 삭제'}</button>` : ''}</div></div>`;
 }
 function groups(R) {
   const m = new Map();
@@ -446,7 +446,8 @@ document.addEventListener('click', e => {
   const rt = e.target.closest('.rcT'); if (rt) { const k = rt.dataset.rc; openRc.has(k) ? openRc.delete(k) : openRc.add(k); render(); return; }
   const d = e.target.closest('.dl');
   if (d) { const k = d.dataset.k;
-    if (armed === k) { armed = null; fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&del=' + encodeURIComponent(k)).then(r => r.json()).then(x => { if (x.ok) load(); else $('upd').textContent = '삭제 실패: ' + (x.error || ''); }).catch(er => { $('upd').textContent = '삭제 실패: ' + er; }); }
+    if (armed === k) { armed = null; const rr = data.rows.find(x => x.key === k), ks = rr && rr.twin ? data.rows.filter(x => x.pk === rr.pk).map(x => x.key) : [k];   // V140: 같은 폰의 SIM 줄은 함께 삭제
+      Promise.all(ks.map(kk => fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&del=' + encodeURIComponent(kk)).then(r => r.json()))).then(xs => { const bad = xs.find(x => !x.ok); if (!bad) load(); else { $('upd').textContent = '삭제 실패: ' + (bad.error || ''); load(); } }).catch(er => { $('upd').textContent = '삭제 실패: ' + er; }); }
     else { armed = k; render(); setTimeout(() => { if (armed === k) { armed = null; render(); } }, 4000); }
     return; }
   const ag = e.target.closest('[data-ag]'); if (ag) { const gs = ag.dataset.ag.split('|'); if (mode !== 'list') { mode = 'list'; $('bL').className = 'on'; $('bT').className = ''; } gs.forEach(n => pInfo.add(n)); render(); const el = document.querySelector(`.gp[data-g="${CSS.escape(gs[0])}"]`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }   // V127: 모음 알림 → 그 그룹 기간 펼침
@@ -487,7 +488,7 @@ const mL = n => n >= 60 && n % 60 === 0 ? (n / 60) + '시간' : n + '분';
 const cntS = (a, b) => a === b ? a + '회' : a + '~' + b + '회';
 const fastS = r => r.fast === 1 ? '빨리 받기 · 최대 5분' : r.fast === 0 ? '기본 · 최대 30분' : '앱 V119 필요';
 let cs = null;   // 통화 시작 창 상태
-const csDef = () => { let o = {}; try { o = JSON.parse(localStorage.getItem('dc_cs') || '{}'); } catch (x) {} return Object.assign({ res: false, after: 10, min: 60, a: 4, b: 4, range: false }, o); };
+const csDef = () => { let o = {}; try { o = JSON.parse(localStorage.getItem('dc_cs') || '{}'); } catch (x) {} return Object.assign({ res: false, after: 10, min: 60, a: 4, b: 4, range: false, sim: 0 }, o); };
 function cmdOf(k) {   // 이 줄의 가장 최근 원격 명령 (V139: 같은 폰의 SIM 줄은 명령 1개를 같이 보여 줌)
   if (!data || !data.cmds) return null;
   const r = data.rows.find(x => x.key === k), ks = r && r.twin ? data.rows.filter(x => x.pk === r.pk).map(x => x.key) : [k];
@@ -598,6 +599,7 @@ function drawCs() {   // 아래에서 올라오는 'n대에 통화 시작' 창
    <div class="hr">언제 시작<b>${cs.res ? (okA0 ? cs.after + '분 뒤 · ' + hmK(at) : '—') : '바로'}</b>${cs.res ? `<a data-ed="after">${cs.edA ? '닫기' : '직접 입력'}</a>` : ''}</div>
    <div class="seg2"><button data-res="0" class="${cs.res ? '' : 'on'}">바로 시작</button><button data-res="1" class="${cs.res ? 'on' : ''}">예약 시작</button></div>
    ${est}${warn}
+   ${R.some(r => r.twin) ? `<div class="hr">어느 SIM 으로<b>${['기본', 'SIM1', 'SIM2', '번갈아'][cs.sim || 0]}</b></div><div class="seg2">${[[0, '기본'], [1, 'SIM1'], [2, 'SIM2'], [3, '번갈아']].map(([v, t]) => `<button data-sim="${v}" class="${(cs.sim || 0) === v ? 'on' : ''}">${t}</button>`).join('')}</div>` : ''}
    ${cs.res ? (cs.edA ? `<input type="number" inputmode="numeric" min="1" max="240" data-in="after" value="${cs.after}" placeholder="1~240분">` : '') + c5([5, 10, 20, 30, 60], cs.after, 'after', m => !afterOk(m)) : ''}
    <div class="hr">몇 분 동안<b>${okM ? cs.min + '분' : '—'}</b><a data-ed="min">${cs.edM ? '닫기' : '직접 입력'}</a></div>
    ${cs.edM ? `<input type="number" inputmode="numeric" min="5" max="240" data-in="min" value="${cs.min}" placeholder="5~240분">` : ''}${c5([5, 10, 30, 60, 120], cs.min, 'min')}
@@ -609,8 +611,8 @@ function drawCs() {   // 아래에서 올라오는 'n대에 통화 시작' 창
 function csSend() {
   const R = phoneRows(), { at } = csCalc();
   cs.busy = true; cs.err = ''; drawCs();
-  try { localStorage.setItem('dc_cs', JSON.stringify({ res: cs.res, after: cs.after, min: cs.min, a: cs.a, b: cs.b, range: cs.range })); } catch (x) {}
-  const q = '&cmd=new&rows=' + encodeURIComponent(JSON.stringify(R.map(r => r.key))) + '&kind=' + (cs.res ? 'res' : 'now') + '&at=' + at + '&min=' + cs.min + '&a=' + cs.a + '&b=' + cs.b;
+  try { localStorage.setItem('dc_cs', JSON.stringify({ res: cs.res, after: cs.after, min: cs.min, a: cs.a, b: cs.b, range: cs.range, sim: cs.sim || 0 })); } catch (x) {}
+  const q = '&cmd=new&rows=' + encodeURIComponent(JSON.stringify(R.map(r => r.key))) + '&kind=' + (cs.res ? 'res' : 'now') + '&at=' + at + '&min=' + cs.min + '&a=' + cs.a + '&b=' + cs.b + '&sim=' + (R.some(r => r.twin) ? (cs.sim || 0) : 0);
   fetch(URL_ + '?key=' + encodeURIComponent(KEY) + q).then(r => r.json()).then(x => {
     if (!x.ok) { cs.busy = false; cs.err = '보내지 못했어요: ' + (x.error || ''); drawCs(); return; }
     setSel(false); load();
@@ -632,7 +634,8 @@ document.addEventListener('click', e => {   // 선택 모드·창 (기존 클릭
     if (t.closest('[data-csx]')) { cs = null; drawCs(); return; }
     if (cs.busy) return;
     const d = t.closest('button, a'); if (!d) return;
-    if (d.dataset.res) { cs.res = d.dataset.res === '1'; if (cs.res) fixAfter(); }
+    if (d.dataset.sim !== undefined) cs.sim = +d.dataset.sim;
+    else if (d.dataset.res) { cs.res = d.dataset.res === '1'; if (cs.res) fixAfter(); }
     else if (d.dataset.c5) { if (d.disabled) return; const v = +d.dataset.v; if (d.dataset.c5 === 'min') { cs.min = v; cs.a = cs.b = DEF(v); } else cs.after = v; }
     else if (d.dataset.ed === 'after') cs.edA = !cs.edA;
     else if (d.dataset.ed === 'min') cs.edM = !cs.edM;
