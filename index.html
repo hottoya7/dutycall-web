@@ -31,6 +31,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 @media (prefers-color-scheme:light){.gh{background:rgba(59,91,219,.1);color:#3b5bdb}}
 .ln{border-left:4px solid var(--c)}.ln+.ln{border-top:1px solid var(--line)}
 .lh{display:grid;grid-template-columns:fit-content(40%) 1fr auto;gap:8px;align-items:center;padding:8px 12px;cursor:pointer}
+.sm{display:inline-block;font-size:9px;font-weight:700;color:#fff;border-radius:5px;padding:0 5px;margin-top:2px;line-height:1.5;text-transform:none}.sm1{background:#3B5BDB}.sm2{background:#0CA678}.tw{color:#9fb0ff;text-decoration:underline;cursor:pointer}
 .lh b{font-size:14px;text-transform:uppercase;min-width:42px;overflow-wrap:anywhere}.ln .n{font-size:12px;line-height:1.3}.ln .n small{display:block;color:var(--c);font-size:11px}
 .ln .bar{height:5px;margin:4px 0 0}.ln .det{margin:0 12px;padding:0 0 10px}.ln.open .det{display:block}
 .dl{margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);border-radius:8px;padding:7px 12px;font-size:12px}.dl.on{background:var(--red);color:#fff}
@@ -157,12 +158,13 @@ const SETUP_ITEMS = [['perm','권한'],['loc','위치'],['bat','배터리 최적
 function chips(r) { return ''; }   // V109: 배터리·설정 미비 칩 삭제 → 배터리는 오른쪽 시각 아래, 설정 미비는 사유 줄로
 function lineBody(r) {
   const normal = r.level === 2;
-  const dm = r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}` : '';
+  const own = !r.twin || r.main;   // V139: 데이터·기지국·지금 통화·설정 점검은 폰 공통 → 같은 폰의 대표(가장 앞 SIM) 줄에만
+  const dm = own && r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}` : '';
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
   if (ov) return `횟수 ${r.cnt}/${r.needCnt} · ${r.min}/${r.needMin}분${ov}`;
   let h = `횟수 ${r.cnt}/${r.needCnt} · ${r.min}/${r.needMin}분<small${r.blue ? ' class="blue"' : ''}>${E(r.tag)}`;
   if (normal) {   // 정상: 상태 · 데이터 · 기지국을 한 줄에
-    const p = [dm, r.cell >= 0 ? `기지국 ${r.cell}회` : ''].filter(Boolean);
+    const p = [dm, own && r.cell >= 0 ? `기지국 ${r.cell}회` : ''].filter(Boolean);
     h += p.length ? `<span style="color:var(--sub)"> · ${p.join(' · ')}</span>` : '';
     return h + '</small>';
   }
@@ -171,7 +173,7 @@ function lineBody(r) {
     const names = E(r.missNames.join(' · '));
     h += `<small class="why" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
   }
-  const q = [dm, r.cell >= 0 ? `기지국 변경 후 성공 ${r.cell}회` : ''].filter(Boolean);
+  const q = [dm, own && r.cell >= 0 ? `기지국 변경 후 성공 ${r.cell}회` : ''].filter(Boolean);
   if (q.length) h += `<small style="color:var(--sub)">${q.join(' · ')}</small>`;
   return h;
 }
@@ -334,12 +336,12 @@ function planHtml(r) {   // V115: 최근 통화 5건 — 눌러야 펼침(접힌
 function line(r) {
   const o = open.has(r.key) && !sel ? ' open' : '';
   const ck = sel ? `<span class="ck${sel.has(r.key) ? ' on' : ''}${canSel(r) ? '' : ' no'}"></span>` : '';   // V119: 선택 모드 체크칸
-  return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b>${E(r.label)}</b>
+  return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b>${E(r.label)}${r.twin ? `<br><span class="sm sm${r.sim}">SIM${r.sim}</span>` : ''}</b>
    <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small><small class="ns">${nsTxt(r)}</small>${battHtml(r)}${nextHtml(r)}</div></div>
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
    <span>기본 전화앱 <b>${r.dialer ? '예' : '아니오'}</b></span><span>소리샘 보호 <b>${r.guard ? '켜짐' : '꺼짐'}</b></span>
-   <span>마지막 통화 <b>${hm(r.lastCall)}</b></span><span>${E(r.carrier)} <b>${E(r.model)}</b></span>${r.batt >= 0 ? `<span>배터리 <b>${r.batt}%${r.chg ? ' · 충전 중' : ' · 충전 안 함'}</b></span>` : ''}${r.fast >= 0 ? `<span>원격 <b>${r.fast ? '빨리 받기' : '기본'}</b></span>` : ''}</div>${mgmtHtml(r)}${planHtml(r)}${setupHtml(r)}${data.canDel ? `<button class="dl${armed === r.key ? ' on' : ''}" data-k="${E(r.key)}">${armed === r.key ? '한 번 더 누르면 삭제' : '이 줄 삭제'}</button>` : ''}</div></div>`;
+   <span>마지막 통화 <b>${hm(r.lastCall)}</b></span><span>${E(r.carrier)} <b>${E(r.model)}</b></span>${r.batt >= 0 ? `<span>배터리 <b>${r.batt}%${r.chg ? ' · 충전 중' : ' · 충전 안 함'}</b></span>` : ''}${r.fast >= 0 ? `<span>원격 <b>${r.fast ? '빨리 받기' : '기본'}</b></span>` : ''}</div>${!r.twin || r.main ? mgmtHtml(r) : twinHtml(r)}${planHtml(r)}${!r.twin || r.main ? setupHtml(r) : ''}${data.canDel ? `<button class="dl${armed === r.key ? ' on' : ''}" data-k="${E(r.key)}">${armed === r.key ? '한 번 더 누르면 삭제' : '이 줄 삭제'}</button>` : ''}</div></div>`;
 }
 function groups(R) {
   const m = new Map();
@@ -486,9 +488,17 @@ const cntS = (a, b) => a === b ? a + '회' : a + '~' + b + '회';
 const fastS = r => r.fast === 1 ? '빨리 받기 · 최대 5분' : r.fast === 0 ? '기본 · 최대 30분' : '앱 V119 필요';
 let cs = null;   // 통화 시작 창 상태
 const csDef = () => { let o = {}; try { o = JSON.parse(localStorage.getItem('dc_cs') || '{}'); } catch (x) {} return Object.assign({ res: false, after: 10, min: 60, a: 4, b: 4, range: false }, o); };
-function cmdOf(k) {   // 이 줄의 가장 최근 원격 명령
-  return data && data.cmds ? data.cmds.filter(c => c.target === k).sort((a, b) => b.made - a.made)[0] : null;
+function cmdOf(k) {   // 이 줄의 가장 최근 원격 명령 (V139: 같은 폰의 SIM 줄은 명령 1개를 같이 보여 줌)
+  if (!data || !data.cmds) return null;
+  const r = data.rows.find(x => x.key === k), ks = r && r.twin ? data.rows.filter(x => x.pk === r.pk).map(x => x.key) : [k];
+  return data.cmds.filter(c => ks.indexOf(c.target) >= 0).sort((a, b) => b.made - a.made)[0] || null;
 }
+function twinHtml(r) {   // V139: 같은 폰의 두 번째 SIM 줄 — 폰 공통 정보는 대표 줄로 안내
+  const m = data.rows.find(x => x.pk === r.pk && x.main), c = cmdOf(r.key);
+  return `<div class="mi"><span class="mt">같은 폰 · SIM${m ? m.sim : 1} 줄과 함께</span><div><span>지금 통화 · 설정 점검 · 데이터는 ${m ? `<a class="tw" data-tw="${E(m.key)}">SIM${m.sim} 줄에서 확인 ›</a>` : 'SIM1 줄에서 확인'}</span></div>${c ? `<span class="mt">원격 명령</span><div><span>${E(cmdLine(c))}</span><span>${hmK(c.made)} 보냄</span></div>` : ''}</div>`;
+}
+function phoneRows() { return data.rows.filter(r => sel.has(r.key) && (!r.twin || r.main)); }   // V139: 선택한 줄을 폰 단위로(같은 폰 SIM 줄은 대표 1줄)
+function tog(r, on) { data.rows.filter(x => x.pk === r.pk).forEach(x => on ? sel.add(x.key) : sel.delete(x.key)); }   // V139: 같은 폰의 SIM 줄은 함께 선택·해제
 function cmdLine(c) {
   const what = (c.kind === '예약' ? hmK(c.at) + ' 예약 ' : '바로 ') + c.min + '분 ' + cntS(c.a, c.b);
   const st = { '대기': '📨 명령 대기', '전달': '📨 전달됨', '시작': '▶ 진행 중', '예약': '⏰ 예약됨', '끝': '✓ 끝', '거절': '✗ 거절', '만료': '✗ 만료', '취소': '취소됨' }[c.st] || c.st;
@@ -530,14 +540,14 @@ addEventListener('popstate', () => {
 setInterval(syncBack, 200);
 function pendSel() {   // V133: 선택한 줄 중 취소할 수 있는(대기) 명령 id 목록
   if (!sel || !data || !data.canDel) return [];
-  return [...sel].map(k => cmdOf(k)).filter(c => c && c.st === '대기' && !pc.has(c.id)).map(c => c.id);
+  return [...sel].map(k => cmdOf(k)).filter(c => c && c.st === '대기' && !pc.has(c.id)).map(c => c.id).filter((v, i, a) => a.indexOf(v) === i);
 }
 function selBar() {
   let el = $('sbar');
   document.body.classList.toggle('sm', !!sel);
   if (!sel) { document.body.style.paddingBottom = ''; if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'sbar'; el.className = 'sbar'; document.body.appendChild(el); }
-  const n = sel.size, pd = pendSel();
+  const n = phoneRows().length, pd = pendSel();
   document.body.style.paddingBottom = pd.length ? '150px' : '';
   el.innerHTML = pd.length
     ? `<b>${n}대 선택<span class="tg">대기 명령 ${pd.length}</span></b><button class="b0" data-sb="x">선택 해제</button><div class="l2"><button class="bw" data-sb="cxall">대기 명령 ${pd.length}개 취소</button><button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button></div>`
@@ -568,7 +578,7 @@ function drawCs() {   // 아래에서 올라오는 'n대에 통화 시작' 창
   if (!cs || !sel || !data) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'cs'; el.className = 'cs'; document.body.appendChild(el); }
   const sh0 = el.querySelector('.sheet'), top0 = sh0 ? sh0.scrollTop : 0;
-  const R = data.rows.filter(r => sel.has(r.key)), n = R.length, { at, cap } = csCalc();
+  const R = phoneRows(), n = R.length, { at, cap } = csCalc();
   const nF = R.filter(r => r.fast === 1).length, nB = n - nF, base = resBase(), now = Date.now();
   const c5 = (opts, v, k, dis) => `<div class="c5">${opts.map(x => `<button class="${x === v ? 'on' : ''}" data-c5="${k}" data-v="${x}"${dis && dis(x) ? ' disabled' : ''}>${mL(x)}</button>`).join('')}</div>`;
   const lim = cs.res && base ? base - 600000 : 0;
@@ -584,7 +594,7 @@ function drawCs() {   // 아래에서 올라오는 'n대에 통화 시작' 창
   el.innerHTML = `<div class="ov" data-csx="1"></div><div class="sheet"><div class="hd2"></div>
    <div class="ttl"><b>${n}대에 통화 시작</b><i data-csx="1">✕</i></div>
    <div class="sub2">${sub}</div>
-   ${R.map(r => `<div class="pl">${E(String(r.full).toUpperCase())}<span class="${r.fast === 1 ? 'f' : ''}">${r.fast === 1 ? '빨리 받기 · 최대 5분' : '기본 · 최대 30분'}</span></div>`).join('')}
+   ${R.map(r => `<div class="pl">${E(String(r.twin ? r.full.replace(/ · SIM\d+$/, '') + ' · SIM1+2' : r.full).toUpperCase())}<span class="${r.fast === 1 ? 'f' : ''}">${r.fast === 1 ? '빨리 받기 · 최대 5분' : '기본 · 최대 30분'}</span></div>`).join('')}
    <div class="hr">언제 시작<b>${cs.res ? (okA0 ? cs.after + '분 뒤 · ' + hmK(at) : '—') : '바로'}</b>${cs.res ? `<a data-ed="after">${cs.edA ? '닫기' : '직접 입력'}</a>` : ''}</div>
    <div class="seg2"><button data-res="0" class="${cs.res ? '' : 'on'}">바로 시작</button><button data-res="1" class="${cs.res ? 'on' : ''}">예약 시작</button></div>
    ${est}${warn}
@@ -597,7 +607,7 @@ function drawCs() {   // 아래에서 올라오는 'n대에 통화 시작' 창
   const sh1 = el.querySelector('.sheet'); if (sh1) sh1.scrollTop = top0;
 }
 function csSend() {
-  const R = data.rows.filter(r => sel.has(r.key)), { at } = csCalc();
+  const R = phoneRows(), { at } = csCalc();
   cs.busy = true; cs.err = ''; drawCs();
   try { localStorage.setItem('dc_cs', JSON.stringify({ res: cs.res, after: cs.after, min: cs.min, a: cs.a, b: cs.b, range: cs.range })); } catch (x) {}
   const q = '&cmd=new&rows=' + encodeURIComponent(JSON.stringify(R.map(r => r.key))) + '&kind=' + (cs.res ? 'res' : 'now') + '&at=' + at + '&min=' + cs.min + '&a=' + cs.a + '&b=' + cs.b;
@@ -609,6 +619,7 @@ function csSend() {
 document.addEventListener('click', e => {   // 선택 모드·창 (기존 클릭 처리보다 먼저)
   const t = e.target;
   if (lpFired) { lpFired = false; e.stopImmediatePropagation(); return; }
+  const twl = t.closest('[data-tw]'); if (twl) { e.stopImmediatePropagation(); goLine(twl.dataset.tw); return; }   // V139
   if (t.closest('#bS')) { setSel(!sel); e.stopImmediatePropagation(); return; }
   const cx = t.closest('.cx');
   const un = t.closest('[data-un]');
@@ -633,10 +644,10 @@ document.addEventListener('click', e => {   // 선택 모드·창 (기존 클릭
   if (!sel) return;
   const ga = t.closest('.ga');
   if (ga) { e.stopImmediatePropagation(); const g = groups(data.rows).find(x => x.name === ga.dataset.ga); if (!g) return;
-    const L = g.list.filter(canSel), all = L.length && L.every(r => sel.has(r.key)); L.forEach(r => all ? sel.delete(r.key) : sel.add(r.key)); selBar(); render(); return; }
+    const L = g.list.filter(canSel), all = L.length && L.every(r => sel.has(r.key)); L.forEach(r => tog(r, !all)); selBar(); render(); return; }
   const l = t.closest('.ln');
   if (l && t.closest('.lh')) { e.stopImmediatePropagation(); const r = data.rows.find(x => x.key === l.dataset.id); if (!r || !canSel(r)) return;
-    sel.has(r.key) ? sel.delete(r.key) : sel.add(r.key); selBar(); render(); }
+    tog(r, !sel.has(r.key)); selBar(); render(); }
 }, true);
 document.addEventListener('input', e => {   // 직접 입력 칸 (창을 다시 그리지 않고 값·버튼만 반영)
   const i = e.target.closest('#cs input'); if (!i || !cs) return;
