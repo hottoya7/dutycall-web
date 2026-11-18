@@ -193,7 +193,7 @@ function nextHtml(r) { return hasNx(r) ? `<span class="nt" data-nx="${E(r.key)}"
 let chTab = 'up', chOpen = false;
 const upList = R => R.filter(hasNx).sort((a, b) => a.nextAt - b.nextAt).slice(0, 50);   // V133: 50건까지(폰 1대당 다음 발신 1건)
 const rcList = R => {   // V133: 발신 아래에 짝 수신(시각 90초·통화시간 5초 이내)을 붙여 한 덩어리로, 덩어리는 발신 시각 최신순
-  const all = R.filter(r => r.recentKnown).flatMap(r => r.recent.map(c => ({ c, r }))).sort((a, b) => b.c.t - a.c.t).slice(0, 120);   // V133: 폰마다 최근 5건 × 약 11대 → 최대 50줄 표시
+  const all = R.filter(r => r.recentKnown).flatMap(r => r.recent.map(c => ({ c, r }))).sort((a, b) => b.c.t - a.c.t).slice(0, 300);   // V135: 폰마다 최근 15건 × 약 11대 → 최대 100줄 표시
   const used = new Set(), G = [];
   all.forEach(x => {
     if (x.c.k !== 'O') return;
@@ -209,7 +209,7 @@ const rcList = R => {   // V133: 발신 아래에 짝 수신(시각 90초·통�
   all.forEach(x => { if (!used.has(x)) G.push({ t: x.c.t, list: [x] }); });
   G.sort((a, b) => b.t - a.t);
   const out = [];
-  for (const g of G) { if (out.length >= 50) break; g.list.forEach((x, i) => out.push(i === g.list.length - 1 ? Object.assign({ end: 1 }, x) : x)); }
+  for (const g of G) { if (out.length >= 100) break; g.list.forEach((x, i) => out.push(i === g.list.length - 1 ? Object.assign({ end: 1 }, x) : x)); }
   return out;
 };
 const rcRes = c => c.s > 0 ? durK(c.s) : (c.k === 'M' ? '부재중' : '연결 안 됨');
@@ -329,7 +329,7 @@ function planHtml(r) {   // V115: 최근 통화 5건 — 눌러야 펼침(접힌
   }).join('') : '<div><span class="w">아직 통화 기록이 없어요</span></div>';
   const c0 = r.recent[0], op = openRc.has(r.key);
   const pv = c0 ? `${dayK(c0.t)} ${hmK(c0.t)} ${c0.k === 'O' ? '발신' : '수신'} ${c0.s <= 0 ? (c0.k === 'M' ? '부재중' : '연결 안 됨') : durK(c0.s)}` : '기록 없음';
-  return `<div class="sec rcT" data-rc="${E(r.key)}"><b>최근 통화 5건</b><span>${op ? '▾' : `<span class="pv">${pv}</span> ▸`}</span></div>` + (op ? `<div class="rc">${rc}</div>` : '');
+  return `<div class="sec rcT" data-rc="${E(r.key)}"><b>최근 통화 ${r.recent.length}건</b><span>${op ? '▾' : `<span class="pv">${pv}</span> ▸`}</span></div>` + (op ? `<div class="rc">${rc}</div>` : '');
 }
 function line(r) {
   const o = open.has(r.key) && !sel ? ' open' : '';
