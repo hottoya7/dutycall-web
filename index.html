@@ -118,12 +118,18 @@ table.tb{table-layout:fixed}.tb th,.tb td{padding:9px 2px;white-space:nowrap;ove
 .ln{scroll-margin-top:90px}.ln.hl{animation:hl 1.8s ease-out}@keyframes hl{0%,55%{box-shadow:inset 0 0 0 2px #7c8cf8}100%{box-shadow:inset 0 0 0 2px transparent}}
 #ch .ov,#ch .sheet{z-index:9}#ch .sheet{max-height:85vh;display:flex;flex-direction:column;overflow:hidden}#ch .cl{overflow:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
 #ch .cl>div.dy{display:flex;justify-content:space-between}.dy em{font-style:normal;color:var(--sub);font-weight:400}.w.nu{color:var(--sub);font-size:11.5px;font-weight:400}
+.cw{overflow:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}.cw .cl{overflow:visible;flex:none}
+.cn{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 6px;font-size:15px;font-weight:700}.cn i{font-style:normal;color:var(--sub);font-size:22px;width:44px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cg .hh{text-align:center;font-size:11px;color:var(--sub);padding:2px 0}.cg .hh.su,.cd.su>b{color:var(--red)}
+.cd{min-height:54px;background:var(--bg);border-radius:8px;padding:3px 2px;text-align:center;font-size:11.5px;cursor:pointer}.cd.o{background:none;cursor:default}.cd>b{display:block;font-weight:600;margin-bottom:1px}
+.cd.td{outline:2px solid #5b6cf0}.cd.sl{background:rgba(91,108,240,.24)}.cd .p{display:block;font-size:11px;font-weight:700;border-radius:5px;margin:1px 2px 0;line-height:1.35}.cd .p.go{background:rgba(52,199,89,.18);color:var(--grn)}.cd .p.pu{background:rgba(91,108,240,.2);color:#9aa8ff}.cd .fl{display:block;font-size:10px;color:var(--red);line-height:1.2}
+.cd2{font-size:13px;font-weight:700;color:#7c8cf8;padding:12px 4px 4px}.cd2 span{font-weight:400;color:var(--sub);font-size:11.5px;margin-left:4px}
 .cm{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);padding:2px 4px 6px}
 .cl>div.dy,.cl.A>div.dy{display:block;position:sticky;top:0;z-index:1;background:var(--card);color:#7c8cf8;font-weight:700;font-size:11.5px;padding:8px 4px 4px;border-top:0;border-radius:0;margin:0;cursor:default}#ch.an .sheet{animation:chup .22s ease-out}@keyframes chup{from{transform:translateY(100%)}}
 .chh{display:flex;align-items:center;gap:4px;margin-bottom:6px}.chh i{font-style:normal;color:var(--sub);font-size:18px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.chs{flex:1;display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}.chs button{flex:1;border:0;background:none;color:var(--sub);min-height:40px;border-radius:9px;font-size:14px;cursor:pointer}.chs .on{background:#5b6cf0;color:#fff;font-weight:700}
 .cl>div{display:grid;grid-template-columns:78px 1fr auto;gap:8px;align-items:center;padding:10px 0;font-size:12.5px;cursor:pointer}.cl>div+div{border-top:1px solid var(--line)}.cl .w{color:var(--sub)}.cl .w.f{color:#7c8cf8;font-weight:700}.cl b{text-transform:uppercase}.cl small{color:var(--sub);font-size:11px;margin-left:4px}.cl .r{font-size:11.5px;color:var(--sub);text-align:right}.cl .r.x{color:var(--red)}.cl .e{display:block;padding:18px 0;text-align:center;color:var(--sub);cursor:default}
 .cl.A>div{border-top:0;margin-bottom:3px;padding:9px 8px;border-radius:8px}.cl.A .o{background:rgba(91,108,240,.17);border-left:3px solid #5b6cf0}.cl.A .o .r{color:#c9d0ff;font-weight:700}.cl.A .o.bad{background:rgba(255,107,94,.14);border-left-color:var(--red)}.cl.A .o.bad .r{color:var(--red)}.cl.A .i{margin-left:26px;opacity:.78;padding-top:6px;padding-bottom:6px;border-left:2px solid var(--line)}.cl.A .i b{font-weight:500}.cl.A>div.gd{margin-bottom:9px}
-@media (prefers-color-scheme:light){.nxc.on{border-color:#3b5bdb}.cl .w.f,.tb .nx1{color:#3b5bdb}.cl.A .o{background:rgba(59,91,219,.1);border-left-color:#3b5bdb}.cl.A .o .r{color:#2a45b0}}
+@media (prefers-color-scheme:light){.cd .p.pu{color:#3b5bdb}.nxc.on{border-color:#3b5bdb}.cl .w.f,.tb .nx1{color:#3b5bdb}.cl.A .o{background:rgba(59,91,219,.1);border-left-color:#3b5bdb}.cl.A .o .r{color:#2a45b0}}
 
 /* V128 변경일·해지일 경고색: D-3~전날 주황, 당일 빨강 */
 .ln.al1,.ln.al1.open,.tb tr.al1{background:rgba(255,167,38,.22)}.ln.al2,.ln.al2.open,.tb tr.al2{background:rgba(229,57,53,.22)}
@@ -209,7 +215,7 @@ const rcList = R => {   // V133: 발신 아래에 짝 수신(시각 90초·통�
 const rcRes = c => c.s > 0 ? durK(c.s) : (c.k === 'M' ? '부재중' : '연결 안 됨');
 function nextTopHtml(R) {
   const U = upList(R), L = rcList(R); if (!U.length && !L.length) return '';
-  const u = U[0], l = L[0], bad = L.some(x => x.c.s <= 0), a = chTab === 'up', dot = bad ? '<i class="rd"></i>' : '';
+  const u = U[0], l = L[0], bad = L.some(x => x.c.s <= 0), a = chTab !== 'rc', dot = bad ? '<i class="rd"></i>' : '';
   const nm = r => `<span class="uc">${E(r.label)}</span>${r.member ? ' · ' + E(r.group) : ''}`;
   const up = a
     ? `<div class="m">통화 예정</div>${u ? `<b class="nxb">${dayK(u.nextAt)} ${hmK(u.nextAt)}경</b><div class="m">${nm(u)} · ${untilK(u.nextAt - Date.now())}</div>` : '<b class="nx0">예정 없음</b>'}`
@@ -220,7 +226,7 @@ function nextTopHtml(R) {
   return `<div class="nxs"><div class="nxc ${a ? 'on' : 'sm'}" data-cl="up">${up}</div><div class="nxc ${a ? 'sm' : 'on'}" data-cl="rc">${rc}</div></div>`;
 }
 const dayS = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
-const upItems = (R, now) => {   // V133: 통화 예정 = 폰당 다음 발신(정확한 시각) + 날짜별 횟수(시각 미정), 최대 50줄
+const upItems = (R, now, lim) => {   // V133: 통화 예정 = 폰당 다음 발신(정확한 시각) + 날짜별 횟수(시각 미정), 최대 50줄
   const out = [];
   R.forEach(r => {
     if (!(r.recentKnown && (r.auto || r.bnow || r.bres))) return;
@@ -234,13 +240,50 @@ const upItems = (R, now) => {   // V133: 통화 예정 = 폰당 다음 발신(�
     });
   });
   out.sort((a, b) => a.d - b.d || b.ex - a.ex || a.t - b.t);
-  return out.slice(0, 50);
+  return out.slice(0, lim || 50);
 };
+const histOut = R => {   // V134: 서버 '발신기록' + 폰이 지금 보낸 최근 통화 5건의 발신을 합침 (같은 통화는 한 번만)
+  const m = new Map();
+  ((data && data.hist) || []).forEach(h => m.set(h[1] + '|' + h[0], { t: h[0], key: h[1], s: h[2] }));
+  R.forEach(r => r.recentKnown && r.recent.forEach(c => { if (c.k === 'O') m.set(r.key + '|' + c.t, { t: c.t, key: r.key, s: c.s }); }));
+  return [...m.values()];
+};
+const DN = t => Math.floor(D9(t) / 86400000), WD = ['일', '월', '화', '수', '목', '금', '토'];
+let calY = 0, calM = 0, calSel = 0;   // V134: 달력 탭 — 보는 달(한국 기준)과 고른 날짜(일 번호)
+function calHtml(R, now) {
+  const tn = DN(now);
+  if (!calY) { const d = D9(now); calY = d.getUTCFullYear(); calM = d.getUTCMonth(); }
+  if (!calSel) calSel = tn;
+  const first = Date.UTC(calY, calM, 1), f0 = Math.floor(first / 86400000), dim = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate(), dow = new Date(first).getUTCDay();
+  const O = histOut(R), od = {}, UPL = upItems(R, now, 9999), ud = {};
+  O.forEach(x => { const k = DN(x.t), v = od[k] || (od[k] = { ok: 0, no: 0, L: [] }); if (x.s > 0) v.ok++; else v.no++; v.L.push(x); });
+  UPL.forEach(u => { const k = DN(u.d); (ud[k] = ud[k] || []).push(u); });
+  const un = k => (ud[k] || []).reduce((a, u) => a + u.n, 0);
+  let g = WD.map((w, i) => `<div class="hh${i ? '' : ' su'}">${w}</div>`).join('');
+  for (let i = 0; i < dow; i++) g += '<div class="cd o"></div>';
+  for (let d = 1; d <= dim; d++) {
+    const k = f0 + d - 1, o = od[k], u = un(k), wk = (dow + d - 1) % 7;
+    g += `<div class="cd${wk === 0 ? ' su' : ''}${k === tn ? ' td' : ''}${k === calSel ? ' sl' : ''}" data-cd="${k}"><b>${d}</b>${o && o.ok ? `<span class="p go">${o.ok}</span>` : ''}${o && o.no ? `<span class="fl">✗${o.no}</span>` : ''}${u && k >= tn ? `<span class="p pu">${u}</span>` : ''}</div>`;
+  }
+  const sd = new Date(calSel * 86400000), so = od[calSel], su = ud[calSel] || [], byK = k => R.find(x => x.key === k);
+  const nmOf = k => { const r = byK(k); return r ? { l: r.label, g: r.group, key: r.key } : { l: String(k).split('|')[0], g: '', key: '' }; };
+  const rowO = x => { const n = nmOf(x.key); return `<div class="o${x.s <= 0 ? ' bad' : ''}" data-go="${E(n.key)}"><span class="w">${hmK(x.t)}</span><span><b>${E(n.l)}</b><small>${E(n.g)}</small></span><span class="r${x.s <= 0 ? ' x' : ''}">↗ 발신 ${x.s > 0 ? durK(x.s) : '연결 안 됨'}</span></div>`; };
+  const rowU = u => u.ex ? `<div data-go="${E(u.r.key)}"><span class="w f">${hmK(u.t)}</span><span><b>${E(u.r.label)}</b><small>${E(u.r.group)}</small></span><span class="r">${untilK(u.t - now)}</span></div>` : `<div data-go="${E(u.r.key)}"><span class="w nu">시각 미정</span><span><b>${E(u.r.label)}</b><small>${E(u.r.group)}</small></span><span class="r"><span class="cp"><b>${u.n}회</b></span></span></div>`;
+  const oL = so ? so.L.slice().sort((a, b) => b.t - a.t) : [];
+  const dtl = (oL.length ? `<div class="cd2">발신 ${oL.length}건<span>연결 ${so.ok} · 안 됨 ${so.no}</span></div><div class="cl A">${oL.map(rowO).join('')}</div>` : '')
+    + (su.length && calSel >= tn ? `<div class="cd2">통화 예정 ${su.reduce((a, u) => a + u.n, 0)}회</div><div class="cl A">${su.map(rowU).join('')}</div>` : '')
+    || `<div class="cl"><div class="e">이 날은 기록·예정이 없어요</div></div>`;
+  return `<div class="cn"><i data-cm="-1">‹</i>${calY}년 ${calM + 1}월<i data-cm="1">›</i></div><div class="cg">${g}</div><div class="cd2" style="padding-top:14px">${sd.getUTCMonth() + 1}/${sd.getUTCDate()} (${WD[sd.getUTCDay()]})</div>${dtl}<div class="cm" style="padding-top:10px"><span>초록 = 발신 횟수 · 파랑 = 예정 · 빨강 ✗ = 연결 안 됨</span></div>`;
+}
 function drawCh() {   // V127: 통화 예정·최근 통화 목록 창(바깥·✕ 누르면 닫힘, 줄을 누르면 그 회선 카드로)
   let el = $('ch');
   if (!chOpen || !data) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'ch'; el.className = 'an'; document.body.appendChild(el); setTimeout(() => el.classList.remove('an'), 300); }
-  const old = el.querySelector('.cl'), top0 = old ? old.scrollTop : 0, R = data.rows, now = Date.now(), a = chTab === 'up';
+  const old = el.querySelector('.cl,.cw'), top0 = old ? old.scrollTop : 0, R = data.rows, now = Date.now(), a = chTab === 'up';
+  if (chTab === 'cal') {   // V134: 달력 탭
+    el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up">통화 예정</button><button data-ct="rc">최근 통화</button><button data-ct="cal" class="on">달력</button></div><i data-chx aria-label="닫기">✕</i></div><div class="cw">${calHtml(R, now)}</div></div>`;
+    const cw = el.querySelector('.cw'); if (cw) cw.scrollTop = top0; return;
+  }
   const dh = t => dayK(t) + ' ' + hmK(t);   // V129: 오늘·어제·날짜 + 시각
   const row = (t, r, rt, x, f, cls, hm) => `<div${cls ? ' class="' + cls + '"' : ''} data-go="${E(r.key)}"><span class="w${f ? ' f' : ''}">${hm ? hmK(t) : dh(t)}</span><span><b>${E(r.label)}</b><small>${E(r.group)}</small></span><span class="r${x ? ' x' : ''}">${rt}</span></div>`;
   const dyL = t => { const k = dayK(t), m = mdK(t); return k === m ? k : k + ' · ' + m; };   // V133: 날짜 구분줄(오늘 · 11/16)
@@ -251,7 +294,7 @@ function drawCh() {   // V127: 통화 예정·최근 통화 목록 창(바깥·�
   let lastD = ''; const L = [];
   items.forEach(it => { if (it.t) { const d = dayK(it.t); if (d !== lastD) { L.push(`<div class="dy">${dyL(it.t)}${a ? `<em>${dayN[it.d]}회</em>` : ''}</div>`); lastD = d; } } L.push(it.h); });
   const nRows = items.length, cm = `<div class="cm"><span>${a ? '통화 예정' : '최근 통화'} ${nRows}건</span>${nRows > 8 ? '<span>↕ 위아래로 스크롤</span>' : ''}</div>`;
-  el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up"${a ? ' class="on"' : ''}>통화 예정</button><button data-ct="rc"${a ? '' : ' class="on"'}>최근 통화</button></div><i data-chx aria-label="닫기">✕</i></div>${nRows ? cm : ''}<div class="cl${a ? '' : ' A'}">${L.join('') || `<div class="e">${a ? '예정된 통화가 없어요' : '최근 통화 기록이 없어요'}</div>`}</div></div>`;
+  el.innerHTML = `<div class="ov"></div><div class="sheet"><div class="hd2"></div><div class="chh"><div class="chs"><button data-ct="up"${a ? ' class="on"' : ''}>통화 예정</button><button data-ct="rc"${a ? '' : ' class="on"'}>최근 통화</button><button data-ct="cal">달력</button></div><i data-chx aria-label="닫기">✕</i></div>${nRows ? cm : ''}<div class="cl${a ? '' : ' A'}">${L.join('') || `<div class="e">${a ? '예정된 통화가 없어요' : '최근 통화 기록이 없어요'}</div>`}</div></div>`;
   const s = el.querySelector('.cl'); if (s) s.scrollTop = top0;
 }
 function goLine(key) {   // V127: 표·목록 창의 줄 → 카드 목록의 그 회선(그룹·상세 펼침, 잠깐 테두리 강조)
@@ -389,6 +432,8 @@ document.addEventListener('click', e => {
   if (hc) {
     if (e.target.closest('.ov, [data-chx]')) { chOpen = false; drawCh(); return; }
     const ct = e.target.closest('[data-ct]'); if (ct) { chTab = ct.dataset.ct; render(); return; }
+    const cd = e.target.closest('[data-cd]'); if (cd) { calSel = +cd.dataset.cd; render(); return; }   // V134: 달력 날짜 선택
+    const cm = e.target.closest('[data-cm]'); if (cm) { calM += +cm.dataset.cm; if (calM < 0) { calM = 11; calY--; } else if (calM > 11) { calM = 0; calY++; } render(); return; }
     const go = e.target.closest('[data-go]'); if (go) goLine(go.dataset.go);
     return;
   }
