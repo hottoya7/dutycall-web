@@ -161,7 +161,7 @@ const SETUP_ITEMS = [['perm','권한'],['loc','위치'],['bat','배터리 최적
 function chips(r) { return ''; }   // V109: 배터리·설정 미비 칩 삭제 → 배터리는 오른쪽 시각 아래, 설정 미비는 사유 줄로
 const CK = '<svg class="gok" viewBox="0 0 12 12" aria-label="달성"><circle cx="6" cy="6" r="6" fill="#22c55e"/><path d="M3.2 6.3l1.9 1.9 3.7-4" fill="none" stroke="#06210f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';   // V142: 목표 달성 표시
 const okCnt = r => r.needCnt > 0 && r.cnt >= r.needCnt, okMin = r => r.needMin > 0 && r.min >= r.needMin, okCell = r => r.cellGoal > 0 && r.cell >= r.cellGoal;
-const cntMin = r => `횟수 ${r.cnt}/${r.needCnt}${okCnt(r) ? CK : ''} · ${r.min}/${r.needMin}분${okMin(r) ? CK : ''}`;
+const cntMin = r => `발신 ${r.cnt}/${r.needCnt}${okCnt(r) ? CK : ''} · ${r.min}/${r.needMin}분${okMin(r) ? CK : ''}`;
 const okIn = r => r.inNeedCnt > 0 && r.inCnt >= r.inNeedCnt, okInSec = r => r.inNeedSec > 0 && r.inSec >= r.inNeedSec, okData = r => r.dataGoal > 0 && r.dataMB >= r.dataGoal;   // V143: 수신·데이터 목표 ✓ (발신 목표가 우선, 수신은 집계·표시만)
 const inTxt = r => r.inCnt >= 0 && r.inNeedCnt > 0 ? `수신 ${r.inCnt}/${r.inNeedCnt}회${okIn(r) ? CK : ''} · ${Math.floor(r.inSec / 60)}/${Math.floor(r.inNeedSec / 60)}분${okInSec(r) ? CK : ''}` : '';
 const cellTxt = (r, pre) => r.cellGoal > 0 ? `${pre}${r.cell}/${r.cellGoal}회${okCell(r) ? CK : ''}` : `${pre}${r.cell}회`;
@@ -172,12 +172,11 @@ function lineBody(r) {
   const it = inTxt(r);
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
   if (ov) return `${cntMin(r)}${ov}`;
-  let h = `${cntMin(r)}<small${r.blue ? ' class="blue"' : ''}>${E(r.tag)}`;
-  if (normal) {   // 정상: 상태 · 데이터 · 기지국을 한 줄에
+  if (normal) {   // 정상: 상태는 첫 줄 앞으로, 수신 · 데이터 · 기지국은 다음 줄에
     const p = [it, dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean);
-    h += p.length ? `<span style="color:var(--sub)"> · ${p.join(' · ')}</span>` : '';
-    return h + '</small>';
+    return `<small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}` + (p.length ? `<small style="color:var(--sub)">${p.join(' · ')}</small>` : '');
   }
+  let h = `${cntMin(r)}<small${r.blue ? ' class="blue"' : ''}>${E(r.tag)}`;
   h += '</small>';   // 비정상: 상태 / 사유 / 데이터·기지국 을 각각 한 줄로
   if (r.miss && r.miss.length) {
     const names = E(r.missNames.join(' · '));
