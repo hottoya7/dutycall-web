@@ -12,7 +12,8 @@
 .grp{font-size:12px;font-weight:700;margin:12px 2px 6px}
 .row{background:var(--card);border-radius:8px;margin-bottom:5px;overflow:hidden;border-left:4px solid var(--c)}
 .hd{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;padding:9px 10px;cursor:pointer}
-.hd b{font-size:15px}.n{font-size:12px;line-height:1.35}.n small{display:block;color:var(--c);font-size:11px}.t{font-size:11px;color:var(--sub)}
+.hd b{font-size:15px}.n{font-size:12px;line-height:1.35}.n small{display:block;color:var(--c);font-size:11px}.gok{display:inline-block;width:11px;height:11px;margin-left:3px;vertical-align:-1px}
+.t{font-size:11px;color:var(--sub)}
 .det{display:none;padding:0 10px 10px;border-top:1px solid var(--line)}.row.open .det{display:block}
 .det .bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 3px}.bar i{display:block;height:100%;background:var(--c)}
 .g{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:12px;color:var(--sub);margin-top:8px}.g b{color:var(--tx);font-weight:500}
@@ -158,15 +159,19 @@ const names = ['● 확인 필요', '● 주의', '● 정상'], cls = ['l0','l1
 const shut = new Set(); let armed = null; const openRc = new Set(); let sheetKey = null; const pInfo = new Set();   // V118: ⓘ 회선 기간을 펼친 그룹   // V115: 최근 통화 펼침 · 다음 통화 창
 const SETUP_ITEMS = [['perm','권한'],['loc','위치'],['bat','배터리 최적화'],['ovl','다른 앱 위 표시'],['fsi','전체 화면 알림'],['use','사용 정보'],['dnd','방해 금지']];   // 설정 점검 표시 항목 (V108)
 function chips(r) { return ''; }   // V109: 배터리·설정 미비 칩 삭제 → 배터리는 오른쪽 시각 아래, 설정 미비는 사유 줄로
+const CK = '<svg class="gok" viewBox="0 0 12 12" aria-label="달성"><circle cx="6" cy="6" r="6" fill="#22c55e"/><path d="M3.2 6.3l1.9 1.9 3.7-4" fill="none" stroke="#06210f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';   // V142: 목표 달성 표시
+const okCnt = r => r.needCnt > 0 && r.cnt >= r.needCnt, okMin = r => r.needMin > 0 && r.min >= r.needMin, okCell = r => r.cellGoal > 0 && r.cell >= r.cellGoal;
+const cntMin = r => `횟수 ${r.cnt}/${r.needCnt}${okCnt(r) ? CK : ''} · ${r.min}/${r.needMin}분${okMin(r) ? CK : ''}`;
+const cellTxt = (r, pre) => r.cellGoal > 0 ? `${pre}${r.cell}/${r.cellGoal}회${okCell(r) ? CK : ''}` : `${pre}${r.cell}회`;
 function lineBody(r) {
   const normal = r.level === 2;
   const own = !r.twin || r.main;   // V139: 데이터·기지국·지금 통화·설정 점검은 폰 공통 → 같은 폰의 대표(가장 앞 SIM) 줄에만
   const dm = own && r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}` : '';
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
-  if (ov) return `횟수 ${r.cnt}/${r.needCnt} · ${r.min}/${r.needMin}분${ov}`;
-  let h = `횟수 ${r.cnt}/${r.needCnt} · ${r.min}/${r.needMin}분<small${r.blue ? ' class="blue"' : ''}>${E(r.tag)}`;
+  if (ov) return `${cntMin(r)}${ov}`;
+  let h = `${cntMin(r)}<small${r.blue ? ' class="blue"' : ''}>${E(r.tag)}`;
   if (normal) {   // 정상: 상태 · 데이터 · 기지국을 한 줄에
-    const p = [dm, own && r.cell >= 0 ? `기지국 ${r.cell}회` : ''].filter(Boolean);
+    const p = [dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean);
     h += p.length ? `<span style="color:var(--sub)"> · ${p.join(' · ')}</span>` : '';
     return h + '</small>';
   }
@@ -175,7 +180,7 @@ function lineBody(r) {
     const names = E(r.missNames.join(' · '));
     h += `<small class="why" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
   }
-  const q = [dm, own && r.cell >= 0 ? `기지국 변경 후 성공 ${r.cell}회` : ''].filter(Boolean);
+  const q = [dm, own && r.cell >= 0 ? cellTxt(r, '기지국 변경 후 성공 ') : ''].filter(Boolean);
   if (q.length) h += `<small style="color:var(--sub)">${q.join(' · ')}</small>`;
   return h;
 }
