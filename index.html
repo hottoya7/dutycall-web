@@ -109,7 +109,7 @@ body.sm{padding-bottom:84px}
 .cs .rg{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:6px}.cs .rg span{font-size:13px;color:var(--sub)}.cs .lk{color:#7c8cf8;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;min-height:40px}
 .cs .c5 button:disabled{opacity:.3;cursor:default}.cs .sub2{font-size:12px;color:var(--sub);margin:2px 0 6px}.cs .ex{font-size:12px;color:var(--sub);margin-top:8px}
 .ut{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));max-width:560px;margin:auto;padding:0 14px;display:flex;flex-direction:column;gap:6px;z-index:12;pointer-events:none}.ut .ui{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;background:#2b2f45;color:#fff;border-radius:12px;padding:2px 4px 2px 14px;font-size:14px}.ut button{border:0;background:none;color:#9cb0ff;font-weight:700;min-height:44px;padding:0 12px;cursor:pointer}
-.t small.ns{display:inline;color:var(--sub);font-size:10.5px;white-space:nowrap}.t small.ns::before{content:' · '}.t small.sy{white-space:nowrap}
+.t small.ns{display:inline;color:var(--sub);font-size:10.5px;white-space:nowrap}.t small.ns::before{content:none}.t .t2{display:block;white-space:nowrap;margin-top:2px}.t .t2 .bt{display:inline;margin:0}.t .t2 .bt::before{content:' · '}.t small.sy{white-space:nowrap}
 .cs .wn{color:var(--amb);font-size:12px;margin-top:10px}.cs .er{color:var(--red);font-size:12px;margin-top:8px}
 .cs .bt2{display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:14px}
 .mi{font-size:12px;color:var(--sub);margin-top:4px}.mi b{color:var(--tx);font-weight:500}.mi .mt{color:#7c8cf8;font-weight:700;font-size:12.5px;margin:10px 0 2px;display:block}.mi div{display:flex;justify-content:space-between;gap:8px}
@@ -172,18 +172,14 @@ function lineBody(r) {
   const it = inTxt(r);
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
   if (ov) return `${cntMin(r)}${ov}`;
-  if (normal) {   // 정상: 상태는 첫 줄 앞으로, 수신 · 데이터 · 기지국은 다음 줄에
-    const p = [it, dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean);
-    return `<small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}` + (p.length ? `<small style="color:var(--sub)">${p.join(' · ')}</small>` : '');
-  }
-  let h = `${cntMin(r)}<small${r.blue ? ' class="blue"' : ''}>${E(r.tag)}`;
-  h += '</small>';   // 비정상: 상태 / 사유 / 데이터·기지국 을 각각 한 줄로
-  if (r.miss && r.miss.length) {
+  // V143: 1줄 = 상태 · 발신 / (설정 미비면 사유 줄) / 수신 / 데이터 · 기지국 → 정상 3줄, 미비 4줄
+  const sub = t => t ? `<small style="color:var(--sub)">${t}</small>` : '';
+  let h = `<small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}`;
+  if (!normal && r.miss && r.miss.length) {
     const names = E(r.missNames.join(' · '));
     h += `<small class="why" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
   }
-  const q = [it, dm, own && r.cell >= 0 ? cellTxt(r, '기지국 변경 후 성공 ') : ''].filter(Boolean);
-  if (q.length) h += `<small style="color:var(--sub)">${q.join(' · ')}</small>`;
+  h += sub(it) + sub([dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '));
   return h;
 }
 function battHtml(r) { return r.batt >= 0 ? `<span class="bt${r.battLow ? ' lo' : ''}">🔋${r.batt}%${r.chg ? ' ⚡' : ''}</span>` : ''; }
@@ -346,7 +342,7 @@ function line(r) {
   const o = open.has(r.key) && !sel ? ' open' : '';
   const ck = sel ? `<span class="ck${sel.has(r.key) ? ' on' : ''}${canSel(r) ? '' : ' no'}"></span>` : '';   // V119: 선택 모드 체크칸
   return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b>${E(r.label)}${r.twin ? `<br><span class="sm sm${r.sim}">SIM${r.sim}</span>` : ''}</b>
-   <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small><small class="ns">${nsTxt(r)}</small>${battHtml(r)}${nextHtml(r)}</div></div>
+   <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small><span class="t2"><small class="ns">${nsTxt(r)}</small>${battHtml(r)}</span>${nextHtml(r)}</div></div>
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
    <span>기본 전화앱 <b>${r.dialer ? '예' : '아니오'}</b></span><span>소리샘 보호 <b>${r.guard ? '켜짐' : '꺼짐'}</b></span>
