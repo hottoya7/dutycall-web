@@ -453,7 +453,7 @@ function renderMain() {
   const h = gs.map((g, i) => {
     const hh = groupHtml(g);
     if (!g.cl) return hh;
-    const first = gs[i - 1] && gs[i - 1].cl === g.cl ? '' : `<div class="same"><div class="st">▾ 같은 폰: ${E([...new Set(g.cl.flatMap(x => x.list.filter(r => r.twin && r.main).map(r => r.label.toUpperCase())))].join(' · '))} (SIM1 + SIM2)</div>`;
+    const first = gs[i - 1] && gs[i - 1].cl === g.cl ? '' : '<div class="same">';   // 점선 묶음(같은 폰 SIM들), 제목 문구는 숨김
     const last = gs[i + 1] && gs[i + 1].cl === g.cl ? '' : '</div>';
     return first + hh + last;
   }).join('');
