@@ -31,7 +31,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .gh{background:rgba(124,140,248,.2);color:#8c9cf8}
 @media (prefers-color-scheme:light){.gh{background:rgba(59,91,219,.1);color:#3b5bdb}}
 .ln{border-left:4px solid var(--c)}.ln+.ln{border-top:1px solid var(--line)}
-.lh{display:grid;grid-template-columns:fit-content(40%) 1fr auto;gap:8px;align-items:center;padding:8px 12px;cursor:pointer}
+.lh{display:grid;grid-template-columns:fit-content(21%) minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 12px;cursor:pointer}
 .sm{display:inline-block;font-size:9px;font-weight:700;color:#fff;border-radius:5px;padding:0 5px;margin-top:2px;line-height:1.5;text-transform:none}.sm1{background:#3B5BDB}.sm2{background:#0CA678}.tw{color:#9fb0ff;text-decoration:underline;cursor:pointer}
 .lh b{font-size:14px;text-transform:uppercase;min-width:42px;overflow-wrap:anywhere}.ln .n{font-size:12px;line-height:1.3}.ln .n small{display:block;color:var(--c);font-size:11px}
 .ln .bar{height:5px;margin:4px 0 0}.ln .det{margin:0 12px;padding:0 0 10px}.ln.open .det{display:block}
@@ -88,7 +88,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .dl{min-height:40px}
 /* V119: 선택 모드 · 통화 시작 창 · 관리 정보 */
 .ca2.sel{width:auto;padding:0 14px;font-size:13px;font-weight:700}.ca2.sel.on{background:#5b6cf0;color:#fff}
-.lh.s{grid-template-columns:30px fit-content(38%) 1fr auto}
+.lh.s{grid-template-columns:30px fit-content(21%) minmax(0,1fr) auto}.lh b.lg{font-size:12px}   /* V144: 이름 칸을 좁게 고정(긴 이름은 작은 글자) → 정보 칸이 항상 같은 폭 */
 .ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--sub);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700}
 .ck.on{background:#5b6cf0;border-color:#5b6cf0}.ck.on::after{content:'✓'}.ck.no{opacity:.3}
 .ga{border:0;background:rgba(124,140,248,.16);color:inherit;font-size:14px;font-weight:700;padding:0 12px 0 6px;min-height:44px;margin-left:6px;border-radius:12px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
@@ -345,7 +345,7 @@ function planHtml(r) {   // V115: 최근 통화 5건 — 눌러야 펼침(접힌
 function line(r) {
   const o = open.has(r.key) && !sel ? ' open' : '';
   const ck = sel ? `<span class="ck${sel.has(r.key) ? ' on' : ''}${canSel(r) ? '' : ' no'}"></span>` : '';   // V119: 선택 모드 체크칸
-  return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b>${E(r.label)}${r.twin ? `<br><span class="sm sm${r.sim}">SIM${r.sim}</span>` : ''}</b>
+  return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b${r.label.length > 7 ? ' class="lg"' : ''}>${E(r.label)}${r.twin ? `<br><span class="sm sm${r.sim}">SIM${r.sim}</span>` : ''}</b>
    <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small><span class="t2"><small class="ns">${nsTxt(r)}</small>${battHtml(r)}</span>${nextHtml(r)}</div></div>
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
