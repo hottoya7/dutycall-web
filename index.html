@@ -161,7 +161,7 @@ const SETUP_ITEMS = [['perm','권한'],['loc','위치'],['bat','배터리 최적
 function chips(r) { return ''; }   // V109: 배터리·설정 미비 칩 삭제 → 배터리는 오른쪽 시각 아래, 설정 미비는 사유 줄로
 const CK = '<svg class="gok" viewBox="0 0 12 12" aria-label="달성"><circle cx="6" cy="6" r="6" fill="#22c55e"/><path d="M3.2 6.3l1.9 1.9 3.7-4" fill="none" stroke="#06210f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';   // V142: 목표 달성 표시
 const okCnt = r => r.needCnt > 0 && r.cnt >= r.needCnt, okMin = r => r.needMin > 0 && r.min >= r.needMin, okCell = r => r.cellGoal > 0 && r.cell >= r.cellGoal;
-const cntMin = r => `발신 ${r.cnt}/${r.needCnt}${okCnt(r) ? CK : ''} · ${r.min}/${r.needMin}분${okMin(r) ? CK : ''}`;
+const cntMin = r => `발신 ${r.cnt}/${r.needCnt}회${okCnt(r) ? CK : ''} · ${r.min}/${r.needMin}분${okMin(r) ? CK : ''}`;
 const okIn = r => r.inNeedCnt > 0 && r.inCnt >= r.inNeedCnt, okInSec = r => r.inNeedSec > 0 && r.inSec >= r.inNeedSec, okData = r => r.dataGoal > 0 && r.dataMB >= r.dataGoal;   // V143: 수신·데이터 목표 ✓ (발신 목표가 우선, 수신은 집계·표시만)
 const inTxt = r => r.inCnt >= 0 && r.inNeedCnt > 0 ? `수신 ${r.inCnt}/${r.inNeedCnt}회${okIn(r) ? CK : ''} · ${Math.floor(r.inSec / 60)}/${Math.floor(r.inNeedSec / 60)}분${okInSec(r) ? CK : ''}` : '';
 const cellTxt = (r, pre) => `${pre}${r.cell}회${okCell(r) ? CK : ''}`;   // V143: 목표 숨김, 현재값 + 달성 체크만
