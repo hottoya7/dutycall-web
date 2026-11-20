@@ -704,11 +704,13 @@ document.addEventListener('pointerdown', e => {
 ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, stopSt, true));
 let lpT = null, lpX = 0, lpY = 0;   // 줄 길게 누르기 → 선택 모드
 document.addEventListener('pointerdown', e => {
+  if (!e.isPrimary) { if (lpT) { clearTimeout(lpT); lpT = null; } return; }   // 두 번째 손가락(세 손가락 캡처 등) → 길게 누르기 취소
   const lh = e.target.closest('.lh'); if (!lh || sel || !data || !data.canDel || mode !== 'list') return;
   const k = lh.parentNode.dataset.id; lpX = e.clientX; lpY = e.clientY;
   lpT = setTimeout(() => { lpT = null; const r = data.rows.find(x => x.key === k); setSel(true); if (r && canSel(r)) sel.add(k); lpFired = true; selBar(); render(); try { navigator.vibrate && navigator.vibrate(20); } catch (x) {} }, 550);
 });
 ['pointerup', 'pointercancel', 'scroll'].forEach(ev => document.addEventListener(ev, () => { if (lpT) { clearTimeout(lpT); lpT = null; } if (lpFired && ev !== 'scroll') setTimeout(() => { lpFired = false; }, 0); }, true));   // 길게 누른 뒤 손을 떼면 뒤따르는 클릭 1번만 무시
+document.addEventListener('touchstart', e => { if (e.touches && e.touches.length > 1 && lpT) { clearTimeout(lpT); lpT = null; } }, { passive: true, capture: true });   // 여러 손가락이면 선택 모드로 들어가지 않음
 document.addEventListener('pointermove', e => { if (lpT && Math.abs(e.clientX - lpX) + Math.abs(e.clientY - lpY) > 12) { clearTimeout(lpT); lpT = null; } });
 document.addEventListener('contextmenu', e => { if (e.target.closest('.lh, .stp')) e.preventDefault(); });
 window.onerror = (m) => { $('upd').textContent = '화면 오류: ' + m; };
