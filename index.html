@@ -88,7 +88,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .dl{min-height:40px}
 /* V119: 선택 모드 · 통화 시작 창 · 관리 정보 */
 .ca2.sel{width:auto;padding:0 14px;font-size:13px;font-weight:700}.ca2.sel.on{background:#5b6cf0;color:#fff}
-.lh.s{grid-template-columns:30px fit-content(21%) minmax(0,1fr) auto}.lh b.lg{font-size:12px}   /* V144: 이름 칸을 좁게 고정(긴 이름은 작은 글자) → 정보 칸이 항상 같은 폭 */
+.lh.s{grid-template-columns:30px fit-content(21%) minmax(0,1fr) auto}.lh b .nmt{display:block;line-height:1.2}   /* V144: 이름 칸을 좁게 고정(긴 이름은 작은 글자) → 정보 칸이 항상 같은 폭 */
 .ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--sub);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700}
 .ck.on{background:#5b6cf0;border-color:#5b6cf0}.ck.on::after{content:'✓'}.ck.no{opacity:.3}
 .ga{border:0;background:rgba(124,140,248,.16);color:inherit;font-size:14px;font-weight:700;padding:0 12px 0 6px;min-height:44px;margin-left:6px;border-radius:12px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
@@ -344,7 +344,7 @@ function planHtml(r) {   // V115: 최근 통화 5건 — 눌러야 펼침(접힌
 function line(r) {
   const o = open.has(r.key) && !sel ? ' open' : '';
   const ck = sel ? `<span class="ck${sel.has(r.key) ? ' on' : ''}${canSel(r) ? '' : ' no'}"></span>` : '';   // V119: 선택 모드 체크칸
-  return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b${r.label.length > 7 ? ' class="lg"' : ''}>${E(r.label)}${r.twin ? `<br><span class="sm sm${r.sim}">SIM${r.sim}</span>` : ''}</b>
+  return `<div class="ln ${cls[r.level]}${o}${alRow(r)}" data-id="${E(r.key)}"><div class="lh${sel ? ' s' : ''}">${ck}<b><span class="nmt">${E(r.label)}</span>${r.twin ? `<span class="sm sm${r.sim}">SIM${r.sim}</span>` : ''}</b>
    <div class="n">${lineBody(r)}<div class="bar"><i style="width:${pct(r.cnt, r.needCnt)}%"></i></div></div><div class="t">${hm(r.ts)}<small class="sy">동기화</small><span class="t2"><small class="ns">${nsTxt(r)}</small>${battHtml(r)}</span>${nextHtml(r)}</div></div>
    <div class="det"><div class="g"><span>요금제 <b>${E(r.plan || '-')}</b></span><span>앱 <b>${E(r.ver)}</b></span>
    <span>발신/수신(이번 달) <b>${r.out} / ${r.inn}</b></span><span>자동 통화 <b>${r.auto ? '켜짐' : '꺼짐'}</b></span>
@@ -458,7 +458,14 @@ function renderMain() {
     return first + hh + last;
   }).join('');
   $('v').innerHTML = h || '<div class="more">아직 보고한 폰이 없어요</div>';
+  fitNames();
 }
+function fitNames() {   // V144: 이름 칸은 2줄을 넘지 않게 — 넘으면 글자를 한 단계씩 줄임(최소 8px)
+  document.querySelectorAll('.lh b .nmt').forEach(el => {
+    for (let z = 14; z >= 8; z--) { el.style.fontSize = z + 'px'; if (el.getBoundingClientRect().height <= z * 1.2 * 2 + 1) break; }
+  });
+}
+window.addEventListener('resize', () => { if (typeof fitNames === 'function' && data) fitNames(); });
 function load() {
   if (busy) return; busy = true;
   if (!data) $('upd').textContent = '불러오는 중…';
