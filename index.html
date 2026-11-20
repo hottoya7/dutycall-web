@@ -59,6 +59,8 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 /* V118: 그룹 제목줄 ⓘ(회선 기간) · 손가락으로 누르기 쉬운 크기(44px 이상) */
 .gh{padding:0 0 0 12px;min-height:48px;gap:4px;-webkit-tap-highlight-color:transparent;user-select:none}
 .gh .gn{flex:0 1 auto;min-width:0;padding:13px 0;overflow-wrap:anywhere}
+.same{border:1px dashed #5b6cf0;border-radius:14px;padding:6px 6px 0;margin:10px 0 10px}.same .st{font-size:11px;color:#9fb0ff;padding:0 4px 5px;font-weight:700}.same .gp{margin-top:0}
+.tw2{display:inline-block;font-size:10px;border:1px solid #5b6cf0;color:#9fb0ff;border-radius:9px;padding:0 6px;margin-top:3px}
 .ln .lh{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}   /* V143: 길게 눌러 선택 모드로 들어갈 때 글자가 같이 선택되던 문제 */
 .gh .gi{display:flex;align-items:center;white-space:nowrap;margin-left:auto}
 .gh .cv{width:56px;align-self:stretch;display:flex;align-items:center;justify-content:center;font-size:24px;margin-left:0;color:#aab4ff}   /* V133: 접기 ▾ 크게 */
@@ -181,6 +183,7 @@ function lineBody(r) {
     h += `<small class="why" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
   }
   h += sub(it) + sub([dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '));
+  if (r.pSim) h += `<span class="tw2">같은 폰 SIM${r.pSim} ${r.pArrow}</span>`;   // V144: 같은 폰의 다른 SIM 줄 위치
   return h;
 }
 function battHtml(r) { return r.batt >= 0 ? `<span class="bt${r.battLow ? ' lo' : ''}">🔋${r.batt}%${r.chg ? ' ⚡' : ''}</span>` : ''; }
@@ -352,8 +355,30 @@ function line(r) {
 function groups(R) {
   const m = new Map();
   R.forEach(r => { if (!m.has(r.group)) m.set(r.group, []); m.get(r.group).push(r); });
-  return [...m].map(([name, list]) => ({ name, list, lv: Math.min(...list.map(r => r.level)) }))
+  const sorted = [...m].map(([name, list]) => ({ name, list, lv: Math.min(...list.map(r => r.level)) }))
     .sort((a, b) => a.lv - b.lv || a.name.localeCompare(b.name, 'ko', { numeric: true }));
+  // V144: 같은 폰(pk)의 SIM 줄이 서로 다른 회선 그룹에 있으면, 그 그룹들을 위아래로 이웃하게 놓고 묶음(cl) 표시
+  const pks = g => new Set(g.list.filter(r => r.twin).map(r => r.pk));
+  const out = [], used = new Set();
+  sorted.forEach(g => {
+    if (used.has(g)) return;
+    const cl = [g]; used.add(g);
+    for (let i = 0; i < cl.length; i++) {   // 같은 폰을 공유하는 그룹을 차례로 끌어옴
+      const mine = pks(cl[i]);
+      sorted.forEach(o => { if (!used.has(o) && [...pks(o)].some(k => mine.has(k))) { used.add(o); cl.push(o); } });
+    }
+    const ms = x => Math.min(...x.list.filter(r => r.twin).map(r => r.sim), 9);
+    if (cl.length > 1) cl.sort((a, b) => ms(a) - ms(b));   // 묶음 안에서는 SIM1 그룹이 위
+    cl.forEach(x => { x.cl = cl.length > 1 ? cl : null; out.push(x); });
+  });
+  const idx = new Map(out.map((x, i) => [x.name, i]));
+  R.forEach(r => {   // 같은 폰의 다른 SIM 줄 안내(칩): 어느 SIM이 위/아래 어느 그룹에 있는지
+    r.pSim = 0; r.pArrow = '';
+    if (!r.twin) return;
+    const o = R.find(x => x.pk === r.pk && x.key !== r.key && x.group !== r.group);
+    if (o) { r.pSim = o.sim; r.pArrow = idx.get(o.group) > idx.get(r.group) ? '▾ 아래' : '▴ 위'; }
+  });
+  return out;
 }
 function grpPeriod(list) {   // V118: 같은 그룹은 날짜가 같음 → 회선 기간을 보낸 첫 줄 사용(옛 앱 폰만 있으면 없음)
   const r = list.find(x => x.open > 0 && x.cancel > x.open);
@@ -425,7 +450,14 @@ function renderMain() {
         return `<tr class="${cls[r.level]}${alRow(r)}" data-id="${E(r.key)}"><td${bad ? ' class="f"' : ''}>${E(r.full)}${bad ? `<small>${E(r.tag)}</small>` : ''}</td><td>${E(cp ? pm(r)[1] : (r.plan || '-'))}</td><td>${r.cnt}/${r.needCnt}</td><td>${r.min}/${r.needMin}</td><td${r === nx0 ? ' class="nx1"' : ''}>${hasNx(r) ? (dayK(r.nextAt) === '오늘' ? hmK(r.nextAt) : mdK(r.nextAt)) : '-'}</td><td>${hm(r.ts)}</td></tr>`; }).join('') + '</table>';
     return;
   }
-  const h = groups(R).map(groupHtml).join('');
+  const gs = groups(R);
+  const h = gs.map((g, i) => {
+    const hh = groupHtml(g);
+    if (!g.cl) return hh;
+    const first = gs[i - 1] && gs[i - 1].cl === g.cl ? '' : `<div class="same"><div class="st">▾ 같은 폰: ${E([...new Set(g.cl.flatMap(x => x.list.filter(r => r.twin && r.main).map(r => r.label)))].join(' · '))} (SIM1 + SIM2)</div>`;
+    const last = gs[i + 1] && gs[i + 1].cl === g.cl ? '' : '</div>';
+    return first + hh + last;
+  }).join('');
   $('v').innerHTML = h || '<div class="more">아직 보고한 폰이 없어요</div>';
 }
 function load() {
