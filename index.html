@@ -89,13 +89,13 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--sub);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700}
 .ck.on{background:#5b6cf0;border-color:#5b6cf0}.ck.on::after{content:'✓'}.ck.no{opacity:.3}
 .ga{border:0;background:rgba(124,140,248,.16);color:inherit;font-size:14px;font-weight:700;padding:0 12px 0 6px;min-height:44px;margin-left:6px;border-radius:12px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
-body.sm .gh .gn{flex:0 1 auto}body.sm .gh .gi{margin-left:auto}.ck.part{background:#5b6cf0;border-color:#5b6cf0}.ck.part::after{content:'▬';font-size:11px}
+body.selmode .gh .gn{flex:0 1 auto}body.selmode .gh .gi{margin-left:auto}.ck.part{background:#5b6cf0;border-color:#5b6cf0}.ck.part::after{content:'▬';font-size:11px}
 .sbar{flex-wrap:wrap}.sbar .l2{display:flex;gap:8px;width:100%}.sbar .l2 button{flex:1}.sbar .tg{font-size:11px;background:#5b6cf0;color:#fff;padding:2px 8px;border-radius:8px;margin-left:6px;font-weight:700}
 .bw{background:rgba(255,107,94,.18);color:#ff9d92;border:1px solid #ff6b5e!important}
 .sbar{position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:auto;display:flex;gap:8px;align-items:center;background:var(--card);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:8}
 .sbar b{flex:1;font-size:14px}.sbar button,.cs .bt2 button{border:0;border-radius:12px;min-height:46px;padding:0 16px;font-size:14px;font-weight:700;cursor:pointer}
 .b0{background:var(--line);color:var(--tx)}.b1{background:#5b6cf0;color:#fff}.b1:disabled{opacity:.4;cursor:default}
-body.sm{padding-bottom:84px}
+body.selmode{padding-bottom:84px}
 .small.blue,.n small.blue{color:#7c8cf8}.n small.amb{color:var(--amb)}
 .cx{border:1px solid #7c8cf8;background:none;color:#7c8cf8;border-radius:8px;font-size:11px;padding:1px 8px;margin-left:6px;min-height:26px;cursor:pointer}
 .cs .ov,.cs .sheet{z-index:10}.cs .sheet{max-height:92vh;overflow:auto}.cs .pl{font-size:13px;border-bottom:1px solid var(--line);padding:6px 0;display:flex;justify-content:space-between}.cs .pl span{color:var(--sub)}.cs .pl span.f{color:#7c8cf8}
@@ -556,7 +556,7 @@ function pendSel() {   // V133: 선택한 줄 중 취소할 수 있는(대기) �
 }
 function selBar() {
   let el = $('sbar');
-  document.body.classList.toggle('sm', !!sel);
+  document.body.classList.toggle('selmode', !!sel);   // V143: 'sm'은 SIM 배지 클래스와 겹쳐 선택 모드에서 글자가 9px·흰색이 되던 문제
   if (!sel) { document.body.style.paddingBottom = ''; if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'sbar'; el.className = 'sbar'; document.body.appendChild(el); }
   const n = phoneRows().length, pd = pendSel();
