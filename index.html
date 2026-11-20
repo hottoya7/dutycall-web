@@ -337,7 +337,7 @@ function goLine(key) {   // V127: 표·목록 창의 줄 → 카드 목록의 �
     const exs = (r.nextDays || []).filter(x => x.n < 0 && x.t > now).map(x => x.t), exC = {}, today = dayS(now);
     if (r.nextAt > now) exs.unshift(r.nextAt);
     exs.forEach(t => { const d = dayS(t); exC[d] = (exC[d] || 0) + 1; });
-    const L = exs.slice(1).map(t => `<span class="cp">${mdK(t)} <b>${hmK(t)}</b></span>`);
+    const L = exs.slice(1, 3).map(t => `<span class="cp">${mdK(t)} <b>${hmK(t)}</b></span>`);   // V153: 날짜+시각 2건 더(모두 3건) 한 줄
     const td = (r.nextToday || 0) - (exC[today] || 0);
     if (td > 0) L.push(`<span class="cp">오늘 남은 <b>${td}회</b></span>`);
     (r.nextDays || []).filter(x => x.n > 0).forEach(x => { const n = x.n - (exC[dayS(x.t)] || 0); if (n > 0) L.push(`<span class="cp">${mdK(x.t)} <b>${n}회</b></span>`); });
