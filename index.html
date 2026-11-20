@@ -183,7 +183,6 @@ function lineBody(r) {
     h += `<small class="why" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
   }
   h += sub(it) + sub([dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '));
-  if (r.pSim) h += `<span class="tw2">같은 폰 SIM${r.pSim} ${r.pArrow}</span>`;   // V144: 같은 폰의 다른 SIM 줄 위치
   return h;
 }
 function battHtml(r) { return r.batt >= 0 ? `<span class="bt${r.battLow ? ' lo' : ''}">🔋${r.batt}%${r.chg ? ' ⚡' : ''}</span>` : ''; }
@@ -454,7 +453,7 @@ function renderMain() {
   const h = gs.map((g, i) => {
     const hh = groupHtml(g);
     if (!g.cl) return hh;
-    const first = gs[i - 1] && gs[i - 1].cl === g.cl ? '' : `<div class="same"><div class="st">▾ 같은 폰: ${E([...new Set(g.cl.flatMap(x => x.list.filter(r => r.twin && r.main).map(r => r.label)))].join(' · '))} (SIM1 + SIM2)</div>`;
+    const first = gs[i - 1] && gs[i - 1].cl === g.cl ? '' : `<div class="same"><div class="st">▾ 같은 폰: ${E([...new Set(g.cl.flatMap(x => x.list.filter(r => r.twin && r.main).map(r => r.label.toUpperCase())))].join(' · '))} (SIM1 + SIM2)</div>`;
     const last = gs[i + 1] && gs[i + 1].cl === g.cl ? '' : '</div>';
     return first + hh + last;
   }).join('');
