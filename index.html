@@ -18,7 +18,7 @@
 .det .bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 3px}.bar i{display:block;height:100%;background:var(--c)}
 .g{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:12px;color:var(--sub);margin-top:8px}.g b{color:var(--tx);font-weight:500}
 .sec{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px}.sec b{font-size:13px}.sec span{font-size:11px;color:var(--sub)}
-.nx{background:var(--bg);border-radius:10px;padding:10px 12px}.nx .m{font-size:12px;color:var(--sub)}.nxb{font-size:17px;color:#7c8cf8}.nx0{font-size:13px;color:var(--sub)}
+.nx{background:var(--bg);border-radius:10px;padding:10px 12px}.cpr{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap}.nx .m{font-size:12px;color:var(--sub)}.nxb{font-size:17px;color:#7c8cf8}.nx0{font-size:13px;color:var(--sub)}
 .cp{display:inline-block;font-size:11.5px;color:var(--sub);border:1px solid var(--line);border-radius:9px;padding:2px 9px;margin:8px 6px 0 0}.cp b{color:var(--tx);font-weight:600}
 .rc>div{display:grid;grid-template-columns:92px 1fr auto;gap:8px;padding:7px 0;font-size:12.5px}.rc>div+div{border-top:1px solid var(--line)}.rc .w{color:var(--sub)}.rc .o{color:#7c8cf8}.rc .i{color:var(--grn)}.rc .r{text-align:right}.rc .x{color:var(--amb)}
 @media (prefers-color-scheme:light){.nxb,.rc .o,.nt{color:#3b5bdb}.nxt{border-color:#3b5bdb}}
@@ -331,10 +331,15 @@ function goLine(key) {   // V127: 표·목록 창의 줄 → 카드 목록의 �
   else if (r.nextToday > 0 || r.nextDays.some(x => x.n > 0)) main = '<b class="nxb">시각 계산 중</b>';
   else main = '<span class="nx0">예정된 통화 없음</span>';
   let chips = '';
-  if (r.auto) {
-    if (r.nextToday > 0) chips += `<span class="cp">오늘 남은 <b>${r.nextToday}회</b></span>`;
-    chips += r.nextDays.filter(x => x.n > 0).slice(0, 3).map(x => `<span class="cp">${mdK(x.t)} <b>${x.n}회</b></span>`).join('');
-    if (r.nextDays.filter(x => x.n > 0).length > 3) chips += '<span class="cp">…</span>';
+  if (r.auto) {   // V148: 전체 2줄 이내 — 1줄째 다음 1건, 2줄째 칩 3개까지(예상 시각 2건 먼저, 남는 자리에 날짜 횟수), 넘치면 …
+    const exs = (r.nextDays || []).filter(x => x.n < 0 && x.t > now).map(x => x.t), exC = {}, today = dayS(now);
+    if (r.nextAt > now) exs.unshift(r.nextAt);
+    exs.forEach(t => { const d = dayS(t); exC[d] = (exC[d] || 0) + 1; });
+    const L = exs.slice(1).map(t => `<span class="cp">${mdK(t)} <b>${hmK(t)}</b></span>`);
+    const td = (r.nextToday || 0) - (exC[today] || 0);
+    if (td > 0) L.push(`<span class="cp">오늘 남은 <b>${td}회</b></span>`);
+    (r.nextDays || []).filter(x => x.n > 0).forEach(x => { const n = x.n - (exC[dayS(x.t)] || 0); if (n > 0) L.push(`<span class="cp">${mdK(x.t)} <b>${n}회</b></span>`); });
+    chips = `<div class="cpr">${L.slice(0, 3).join('')}${L.length > 3 ? '<span class="cp">…</span>' : ''}</div>`;
   }
   return `<div class="nx"><div>${main}</div>${chips}</div>`;
 }
