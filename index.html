@@ -466,12 +466,18 @@ function fitNames() {   // V144: 이름 칸은 2줄을 넘지 않게 — 넘으�
   });
 }
 window.addEventListener('resize', () => { if (typeof fitNames === 'function' && data) fitNames(); });
+// V144: 구분(member)이 없는 이름(예: 에이모바일K.20G.SJ.Heo)은 그룹 제목에 전체 이름이 있으므로 줄 이름에는 끝의 'SJ.Heo'만 표기
+function shortLabel(r) {
+  if (r.member || !r.group) return;
+  const m = /^.+\.([A-Za-z]{1,4}\.[A-Za-z]+)$/.exec(r.group);
+  if (m) r.label = m[1].toLowerCase() + r.label.slice(r.group.length);
+}
 function load() {
   if (busy) return; busy = true;
   if (!data) $('upd').textContent = '불러오는 중…';
   fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&json=1')
     .then(r => r.json())
-    .then(d => { if (!d || !d.rows) throw new Error('bad'); data = d; render(); })
+    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); data = d; render(); })
     .catch(() => {
       $('upd').textContent = data
         ? '⚠ 불러오지 못했어요 · ' + new Date(data.now).toTimeString().slice(0,5) + ' 데이터'
