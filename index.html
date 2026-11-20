@@ -177,10 +177,16 @@ function lineBody(r) {
   if (ov) return `<div class="il">${cntMin(r)}</div>${ov}`;
   // V143: 1줄 = 상태 · 발신 / (설정 미비면 사유 줄) / 수신 / 데이터 · 기지국 → 정상 3줄, 미비 4줄
   const sub = t => t ? `<small class="il" style="color:var(--sub)">${t}</small>` : '';
-  let h = `<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
-  if (!normal && r.miss && r.miss.length) {
-    const names = E(r.missNames.join(' · '));
-    h += `<small class="why il" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
+  const miss = !normal && r.miss && r.miss.length;
+  const names = miss ? E(r.missNames.length >= 3 ? r.missNames[0] + ' 외 ' + (r.missNames.length - 1) : r.missNames.join(' · ')) : '';   // 사유 3개 이상이면 처음 하나 + 외 N
+  let h;
+  if (miss && /^설정 미비/.test(r.tag)) {   // 설정 미비: 1줄 = 설정 미비 N · 사유, 2줄 = 발신
+    h = `<div class="il l1"><small style="display:inline">설정 미비 ${r.miss.length} · ${names}</small></div><div class="il">${cntMin(r)}</div>`;
+  } else if (!normal && !miss) {   // 그 밖의 이상(업데이트 필요·마감 임박 등): 1줄 = 상태, 2줄 = 발신 → 최대 4줄
+    h = `<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small></div><div class="il">${cntMin(r)}</div>`;
+  } else {
+    h = `<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
+    if (miss) h += `<small class="why il" style="color:var(--amb)">설정 미비 ${r.miss.length} · ${names}</small>`;
   }
   h += sub(it) + sub([dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '));
   return h;
@@ -462,7 +468,8 @@ function renderMain() {
 }
 function fitInfo() {   // V144: 정보 줄은 한 줄씩만 — 넘치면 글자를 한 단계씩 줄임(최소 8px) → 정상 3줄·설정 미비 최대 4줄
   document.querySelectorAll('.ln .n .il').forEach(el => {
-    el.style.fontSize = ''; const base = parseFloat(getComputedStyle(el).fontSize) || 12;
+    el.style.fontSize = ''; if (!el.clientWidth) return;   // 숨겨진 탭 등 크기를 잴 수 없을 때는 그대로 두고 보일 때 다시 맞춤
+    const base = parseFloat(getComputedStyle(el).fontSize) || 12;
     for (let z = Math.floor(base); z >= 8 && el.scrollWidth > el.clientWidth + 1; z--) el.style.fontSize = z + 'px';
   });
 }
@@ -472,6 +479,7 @@ function fitNames() {   // V144: 이름 칸은 2줄을 넘지 않게 — 넘으�
   });
 }
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (data) { fitNames(); fitInfo(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && data) { fitNames(); fitInfo(); } });
 window.addEventListener('resize', () => { if (typeof fitNames === 'function' && data) { fitNames(); fitInfo(); } });
 // V144: 구분(member)이 없는 이름(예: 에이모바일K.20G.SJ.Heo)은 제목줄에 '에이모바일K.20G', 줄 이름에 끝의 'SJ.Heo'만 표기
 function shortLabel(r) {
