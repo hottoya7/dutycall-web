@@ -466,11 +466,16 @@ function fitNames() {   // V144: 이름 칸은 2줄을 넘지 않게 — 넘으�
   });
 }
 window.addEventListener('resize', () => { if (typeof fitNames === 'function' && data) fitNames(); });
-// V144: 구분(member)이 없는 이름(예: 에이모바일K.20G.SJ.Heo)은 그룹 제목에 전체 이름이 있으므로 줄 이름에는 끝의 'SJ.Heo'만 표기
+// V144: 구분(member)이 없는 이름(예: 에이모바일K.20G.SJ.Heo)은 제목줄에 '에이모바일K.20G', 줄 이름에 끝의 'SJ.Heo'만 표기
 function shortLabel(r) {
   if (r.member || !r.group) return;
-  const m = /^.+\.([A-Za-z]{1,4}\.[A-Za-z]+)$/.exec(r.group);
-  if (m) r.label = m[1].toLowerCase() + r.label.slice(r.group.length);
+  const m = /^(.+)\.([A-Za-z]{1,4}\.[A-Za-z]+)$/.exec(r.group);
+  if (!m) return;
+  const mark = r.label.slice(r.group.length), who = m[2].toLowerCase();   // 같은 이름 폰 구분표(①②)는 유지
+  r.group = m[1];   // 제목줄: 에이모바일K.20G (사람 이름은 줄 이름으로)
+  r.member = who;
+  r.label = who + mark;
+  r.full = r.group + ' ' + who + mark + (r.twin ? ' · SIM' + r.sim : '');
 }
 function load() {
   if (busy) return; busy = true;
