@@ -88,7 +88,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .dl{min-height:40px}
 /* V119: 선택 모드 · 통화 시작 창 · 관리 정보 */
 .ca2.sel{width:auto;padding:0 14px;font-size:13px;font-weight:700}.ca2.sel.on{background:#5b6cf0;color:#fff}
-.lh.s{grid-template-columns:30px fit-content(21%) minmax(0,1fr) auto}.lh b .nmt{display:block;line-height:1.2}   /* V144: 이름 칸을 좁게 고정(긴 이름은 작은 글자) → 정보 칸이 항상 같은 폭 */
+.lh.s{grid-template-columns:30px fit-content(21%) minmax(0,1fr) auto}.lh b .nmt{display:block;line-height:1.2}.ln .n .il{display:block;white-space:nowrap;overflow:hidden}.ln .n .l1{font-size:12px}   /* V144: 이름 칸을 좁게 고정(긴 이름은 작은 글자) → 정보 칸이 항상 같은 폭 */
 .ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--sub);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700}
 .ck.on{background:#5b6cf0;border-color:#5b6cf0}.ck.on::after{content:'✓'}.ck.no{opacity:.3}
 .ga{border:0;background:rgba(124,140,248,.16);color:inherit;font-size:14px;font-weight:700;padding:0 12px 0 6px;min-height:44px;margin-left:6px;border-radius:12px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
@@ -174,13 +174,13 @@ function lineBody(r) {
   const dm = own && r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}${okData(r) ? CK : ''}` : '';
   const it = inTxt(r);
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
-  if (ov) return `${cntMin(r)}${ov}`;
+  if (ov) return `<div class="il">${cntMin(r)}</div>${ov}`;
   // V143: 1줄 = 상태 · 발신 / (설정 미비면 사유 줄) / 수신 / 데이터 · 기지국 → 정상 3줄, 미비 4줄
-  const sub = t => t ? `<small style="color:var(--sub)">${t}</small>` : '';
-  let h = `<small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}`;
+  const sub = t => t ? `<small class="il" style="color:var(--sub)">${t}</small>` : '';
+  let h = `<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
   if (!normal && r.miss && r.miss.length) {
     const names = E(r.missNames.join(' · '));
-    h += `<small class="why" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
+    h += `<small class="why il" style="color:var(--amb)">${/^설정 미비/.test(r.tag) ? names : `설정 미비 ${r.miss.length} · ${names}`}</small>`;
   }
   h += sub(it) + sub([dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '));
   return h;
@@ -458,14 +458,21 @@ function renderMain() {
     return first + hh + last;
   }).join('');
   $('v').innerHTML = h || '<div class="more">아직 보고한 폰이 없어요</div>';
-  fitNames();
+  fitNames(); fitInfo(); requestAnimationFrame(() => { fitNames(); fitInfo(); });   // 글꼴·배치가 정해진 뒤 한 번 더
+}
+function fitInfo() {   // V144: 정보 줄은 한 줄씩만 — 넘치면 글자를 한 단계씩 줄임(최소 8px) → 정상 3줄·설정 미비 최대 4줄
+  document.querySelectorAll('.ln .n .il').forEach(el => {
+    el.style.fontSize = ''; const base = parseFloat(getComputedStyle(el).fontSize) || 12;
+    for (let z = Math.floor(base); z >= 8 && el.scrollWidth > el.clientWidth + 1; z--) el.style.fontSize = z + 'px';
+  });
 }
 function fitNames() {   // V144: 이름 칸은 2줄을 넘지 않게 — 넘으면 글자를 한 단계씩 줄임(최소 8px)
   document.querySelectorAll('.lh b .nmt').forEach(el => {
     for (let z = 14; z >= 8; z--) { el.style.fontSize = z + 'px'; if (el.getBoundingClientRect().height <= z * 1.2 * 2 + 1) break; }
   });
 }
-window.addEventListener('resize', () => { if (typeof fitNames === 'function' && data) fitNames(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (data) { fitNames(); fitInfo(); } });
+window.addEventListener('resize', () => { if (typeof fitNames === 'function' && data) { fitNames(); fitInfo(); } });
 // V144: 구분(member)이 없는 이름(예: 에이모바일K.20G.SJ.Heo)은 제목줄에 '에이모바일K.20G', 줄 이름에 끝의 'SJ.Heo'만 표기
 function shortLabel(r) {
   if (r.member || !r.group) return;
