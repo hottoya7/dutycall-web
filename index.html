@@ -164,11 +164,11 @@ const okCnt = r => r.needCnt > 0 && r.cnt >= r.needCnt, okMin = r => r.needMin >
 const cntMin = r => `발신 ${r.cnt}/${r.needCnt}${okCnt(r) ? CK : ''} · ${r.min}/${r.needMin}분${okMin(r) ? CK : ''}`;
 const okIn = r => r.inNeedCnt > 0 && r.inCnt >= r.inNeedCnt, okInSec = r => r.inNeedSec > 0 && r.inSec >= r.inNeedSec, okData = r => r.dataGoal > 0 && r.dataMB >= r.dataGoal;   // V143: 수신·데이터 목표 ✓ (발신 목표가 우선, 수신은 집계·표시만)
 const inTxt = r => r.inCnt >= 0 && r.inNeedCnt > 0 ? `수신 ${r.inCnt}/${r.inNeedCnt}회${okIn(r) ? CK : ''} · ${Math.floor(r.inSec / 60)}/${Math.floor(r.inNeedSec / 60)}분${okInSec(r) ? CK : ''}` : '';
-const cellTxt = (r, pre) => r.cellGoal > 0 ? `${pre}${r.cell}/${r.cellGoal}회${okCell(r) ? CK : ''}` : `${pre}${r.cell}회`;
+const cellTxt = (r, pre) => `${pre}${r.cell}회${okCell(r) ? CK : ''}`;   // V143: 목표 숨김, 현재값 + 달성 체크만
 function lineBody(r) {
   const normal = r.level === 2;
   const own = !r.twin || r.main;   // V139: 데이터·기지국·지금 통화·설정 점검은 폰 공통 → 같은 폰의 대표(가장 앞 SIM) 줄에만
-  const dm = own && r.dataMB >= 0 ? (r.dataGoal > 0 ? `데이터 ${fmtMB(r.dataMB)}/${r.dataGoal}MB${okData(r) ? CK : ''}` : `데이터 ${fmtMB(r.dataMB)}`) : '';
+  const dm = own && r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}${okData(r) ? CK : ''}` : '';
   const it = inTxt(r);
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
   if (ov) return `${cntMin(r)}${ov}`;
