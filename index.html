@@ -246,17 +246,18 @@ const upItems = (R, now, lim) => {   // V133: 통화 예정 = 폰당 다음 발�
   const out = [];
   R.forEach(r => {
     if (!(r.recentKnown && (r.auto || r.bnow || r.bres))) return;
-    const ex = r.nextAt > now ? r.nextAt : 0, exD = ex ? dayS(ex) : -1, today = dayS(now);
-    if (ex) out.push({ t: ex, d: exD, r, n: 1, ex: 1 });
-    let tdN = (r.nextToday || 0) - (exD === today ? 1 : 0);
+    const today = dayS(now), exs = [r.nextAt > now ? r.nextAt : 0].concat((r.nextDays || []).filter(x => x.n < 0 && x.t > now).map(x => x.t)).filter(Boolean), exC = {};   // V148: 날짜+시각 3건(nextAt + 예상 2건)
+    exs.forEach(t => { const d = dayS(t); exC[d] = (exC[d] || 0) + 1; out.push({ t, d, r, n: 1, ex: 1 }); });
+    const tdN = (r.nextToday || 0) - (exC[today] || 0);
     if (tdN > 0) out.push({ t: today + 86399000, d: today, r, n: tdN, ex: 0 });
     (r.nextDays || []).forEach(x => {
+      if (x.n <= 0) return;
       const d = dayS(x.t); if (d <= today) return;
-      const n = x.n - (d === exD ? 1 : 0); if (n > 0) out.push({ t: d + 86399000, d, r, n, ex: 0 });
+      const n = x.n - (exC[d] || 0); if (n > 0) out.push({ t: d + 86399000, d, r, n, ex: 0 });
     });
   });
   out.sort((a, b) => a.d - b.d || b.ex - a.ex || a.t - b.t);
-  return out.slice(0, lim || 50);
+  return out.slice(0, lim || 100);
 };
 const histOut = R => {   // V134: 서버 '발신기록' + 폰이 지금 보낸 최근 통화 5건의 발신을 합침 (같은 통화는 한 번만)
   const m = new Map();
@@ -327,13 +328,13 @@ function goLine(key) {   // V127: 표·목록 창의 줄 → 카드 목록의 �
   else if (r.bres && r.nextAt > now) main = `<b class="nxb">⏰ ${hmK(r.nextAt)} 예약 시작</b> <span class="m">· ${untilK(r.nextAt - now)}</span>`;
   else if (!r.auto) main = '<span class="nx0">자동 통화 꺼짐</span>';
   else if (r.nextAt > now) main = `<b class="nxb">${dayK(r.nextAt)} ${hmK(r.nextAt)}경</b> <span class="m">· ${untilK(r.nextAt - now)}</span>`;
-  else if (r.nextToday > 0 || r.nextDays.length) main = '<b class="nxb">시각 계산 중</b>';
+  else if (r.nextToday > 0 || r.nextDays.some(x => x.n > 0)) main = '<b class="nxb">시각 계산 중</b>';
   else main = '<span class="nx0">예정된 통화 없음</span>';
   let chips = '';
   if (r.auto) {
     if (r.nextToday > 0) chips += `<span class="cp">오늘 남은 <b>${r.nextToday}회</b></span>`;
-    chips += r.nextDays.slice(0, 3).map(x => `<span class="cp">${mdK(x.t)} <b>${x.n}회</b></span>`).join('');
-    if (r.nextDays.length > 3) chips += '<span class="cp">…</span>';
+    chips += r.nextDays.filter(x => x.n > 0).slice(0, 3).map(x => `<span class="cp">${mdK(x.t)} <b>${x.n}회</b></span>`).join('');
+    if (r.nextDays.filter(x => x.n > 0).length > 3) chips += '<span class="cp">…</span>';
   }
   return `<div class="nx"><div>${main}</div>${chips}</div>`;
 }
