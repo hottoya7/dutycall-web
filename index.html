@@ -173,7 +173,7 @@ const cellTxt = (r, pre) => `${pre}${r.cell}회${okCell(r) ? CK : ''}`;   // V14
 function lineBody(r) {
   const normal = r.level === 2;
   const own = !r.twin || r.main;   // V139: 데이터·기지국·지금 통화·설정 점검은 폰 공통 → 같은 폰의 대표(가장 앞 SIM) 줄에만
-  const dm = own && r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}${okData(r) ? CK : ''}` : '';
+  const dm = (own || r.verNum >= 160) && r.dataMB >= 0 ? `데이터 ${fmtMB(r.dataMB)}${okData(r) ? CK : ''}` : '';
   const it = inTxt(r);
   const ov = tagSmall(r);   // V119: 선택 모드·원격 명령 상태
   if (ov) return `<div class="il">${cntMin(r)}</div>${ov}`;
