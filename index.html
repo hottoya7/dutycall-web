@@ -190,7 +190,7 @@ function lineBody(r) {
     h = `<div class="il l1"><small${r.blue ? ' class="blue"' : normal ? ' class="okt"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
     if (miss) h += `<small class="why il" style="color:var(--amb)">설정 미비 ${r.miss.length} · ${names}</small>`;
   }
-  h += sub(it) + sub([dm, own && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '));
+  h += sub(it) + sub([dm, (own || r.verNum >= 159) && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '))   // V159: 앱 V159+ 는 기지국을 SIM별로 보냄 → 두 SIM 줄 모두 표시;
   return h;
 }
 function battHtml(r) { return r.batt >= 0 ? `<span class="bt${r.battLow ? ' lo' : ''}">🔋${r.batt}%${r.chg ? ' ⚡' : ''}</span>` : ''; }
