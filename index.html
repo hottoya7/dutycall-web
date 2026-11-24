@@ -518,12 +518,20 @@ function shortLabel(r) {
   r.label = who + mark;
   r.full = r.group + ' ' + who + mark + (r.twin ? ' · SIM' + r.sim : '');
 }
+// V194: 듀얼심 중 앱 '자동통화 off' 인 SIM 줄은 전체 현황에서 숨김 (같은 폰의 다른 SIM 이 켜져 있을 때만 — 폰 전체가 꺼진 경우는 그대로 표시)
+function hideAutoOff(d) {
+  d.all = d.rows;
+  const on = new Set(d.rows.filter(r => r.twin && r.auto).map(r => r.pk));
+  d.rows = d.rows.filter(r => !(r.twin && !r.auto && on.has(r.pk)));
+  const seen = new Set();
+  d.rows.forEach(r => { if (r.twin) { r.main = !seen.has(r.pk); seen.add(r.pk); } });
+}
 function load() {
   if (busy) return; busy = true;
   if (!data) $('upd').textContent = '불러오는 중…';
   fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&json=1')
     .then(r => r.json())
-    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); data = d; render(); })
+    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); hideAutoOff(d); data = d; render(); })
     .catch(() => {
       $('upd').textContent = data
         ? '⚠ 불러오지 못했어요 · ' + new Date(data.now).toTimeString().slice(0,5) + ' 데이터'
@@ -548,7 +556,7 @@ document.addEventListener('click', e => {
   const rt = e.target.closest('.rcT'); if (rt) { const k = rt.dataset.rc; openRc.has(k) ? openRc.delete(k) : openRc.add(k); render(); return; }
   const d = e.target.closest('.dl');
   if (d) { const k = d.dataset.k;
-    if (armed === k) { armed = null; const rr = data.rows.find(x => x.key === k), ks = rr && rr.twin ? data.rows.filter(x => x.pk === rr.pk).map(x => x.key) : [k];   // V140: 같은 폰의 SIM 줄은 함께 삭제
+    if (armed === k) { armed = null; const rr = data.rows.find(x => x.key === k), ks = rr && rr.twin ? data.all.filter(x => x.pk === rr.pk).map(x => x.key) : [k];   // V140: 같은 폰의 SIM 줄은 함께 삭제
       post_({ act: ks.length > 1 ? 'delPhone' : 'del', id: k }).then(x => [x]).then(xs => { const bad = xs.find(x => !x.ok); if (!bad) load(); else { $('upd').textContent = '삭제 실패: ' + (bad.error || ''); load(); } }).catch(er => { $('upd').textContent = '삭제 실패: ' + er; }); }
     else { armed = k; render(); setTimeout(() => { if (armed === k) { armed = null; render(); } }, 4000); }
     return; }
@@ -593,7 +601,7 @@ let cs = null;   // 통화 시작 창 상태
 const csDef = () => { let o = {}; try { o = JSON.parse(localStorage.getItem('dc_cs') || '{}'); } catch (x) {} return Object.assign({ res: false, after: 10, min: 60, a: 4, b: 4, range: false, sim: 0 }, o); };
 function cmdOf(k) {   // 이 줄의 가장 최근 원격 명령 (V139: 같은 폰의 SIM 줄은 명령 1개를 같이 보여 줌)
   if (!data || !data.cmds) return null;
-  const r = data.rows.find(x => x.key === k), ks = r && r.twin ? data.rows.filter(x => x.pk === r.pk).map(x => x.key) : [k];
+  const r = data.rows.find(x => x.key === k), ks = r && r.twin ? data.all.filter(x => x.pk === r.pk).map(x => x.key) : [k];
   return data.cmds.filter(c => ks.indexOf(c.target) >= 0).sort((a, b) => b.made - a.made)[0] || null;
 }
 function twinHtml(r) {   // V139: 같은 폰의 두 번째 SIM 줄 — 폰 공통 정보는 대표 줄로 안내
