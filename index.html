@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--sub);fon
 .t{text-align:right}.bt{display:block;font-size:10.5px;margin-top:2px;white-space:nowrap}.bt.lo{color:var(--amb)}.chip{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:9px;margin:3px 4px 0 0;border:1px solid var(--c2);color:var(--c2)}.cg{--c2:var(--sub)}.ca{--c2:var(--amb)}
 .nt{display:block;margin-top:2px;font-size:11px;font-weight:700;color:#7c8cf8;white-space:nowrap}
 .nxt{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card);border:1px solid #7c8cf8;border-radius:10px;padding:10px 12px;margin-bottom:10px}.nxt .m{font-size:12px;color:var(--sub)}.nxt .a{font-size:11px;color:var(--sub);text-align:right}
-.nt{display:inline-block;background:rgba(124,140,248,.16);border-radius:10px;padding:3px 9px;margin-top:5px;cursor:pointer}
+.nt{display:inline-block;background:rgba(124,140,248,.16);border-radius:10px;padding:3px 9px;margin-top:5px;cursor:pointer}.nt.nd{background:rgba(124,140,248,.07);color:var(--sub);font-weight:500;cursor:default}
 @media (prefers-color-scheme:light){.nt{background:rgba(59,91,219,.10)}}
 .t small.sy{display:inline;color:var(--sub);font-size:10.5px;margin-left:3px}
 .rcT{cursor:pointer}.rcT .pv{color:var(--tx)}
@@ -214,7 +214,17 @@ const durK = s => Math.floor(s / 60) + '분 ' + (s % 60) + '초';
 const untilK = ms => { const m = Math.round(ms / 60000); return m < 1 ? '곧' : (m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분 뒤' : m + '분 뒤'); };
 const nxS = t => { const a = Math.floor(D9(t) / 86400000), b = Math.floor(D9(Date.now()) / 86400000); return a === b ? hmK(t) : mdK(t) + ' ' + hmK(t); };   // V115: 오늘이면 시각만, 아니면 날짜+시각
 const hasNx = r => r.recentKnown && (r.auto || r.bnow || r.bres) && r.nextAt > Date.now();   // V119: 지금 통화 중·예약 중도
-function nextHtml(r) { return hasNx(r) ? `<span class="nt" data-nx="${E(r.key)}">▶ ${nxS(r.nextAt)}</span>` : ''; }   // V115 ①: 접은 줄 오른쪽 다음 통화
+function nextHtml(r) {   // V115 ①: 접은 줄 오른쪽 다음 통화
+  if (hasNx(r)) return `<span class="nt" data-nx="${E(r.key)}">▶ ${nxS(r.nextAt)}</span>`;
+  // V193: 다음 시각이 안 왔어도(통화 직후 보고·이번 달 목표 달성) 남은 날짜 계획이 있으면 날짜로, 목표를 채웠으면 '목표 달성'
+  if (!(r.recentKnown && r.auto)) return '';
+  const now = Date.now(), today = dayS(now);
+  const d = (r.nextDays || []).filter(x => x.n > 0 && x.t > now - 86400000 && (dayS(x.t) > today || r.nextToday > 0)).sort((a, b) => a.t - b.t)[0];
+  const done = okCnt(r) && (r.needMin <= 0 || okMin(r));
+  const nd = d ? (dayS(d.t) === today ? '오늘' : mdK(d.t)) : '';
+  if (!nd && !done) return '';
+  return `<span class="nt nd">${done ? '목표 달성' : ''}${done && nd ? ' · ' : ''}${nd === '오늘' ? '오늘 예정' : nd ? '다음 ' + nd : ''}</span>`;
+}
 // V127: 다음 통화 박스를 좌우 탭(통화 예정 / 최근 통화)으로 — 고른 탭이 3/4 폭, 누르면 아래에서 올라오는 목록 창(10건)
 let chTab = 'up', chOpen = false;
 const upList = R => R.filter(hasNx).sort((a, b) => a.nextAt - b.nextAt).slice(0, 50);   // V133: 50건까지(폰 1대당 다음 발신 1건)
