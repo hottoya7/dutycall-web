@@ -186,8 +186,11 @@ function lineBody(r) {
     h = `<div class="il l1"><small style="display:inline">설정 미비 ${r.miss.length} · ${names}</small></div><div class="il">${cntMin(r)}</div>`;
   } else if (!normal && !miss) {   // 그 밖의 이상(업데이트 필요·마감 임박 등): 1줄 = 상태, 2줄 = 발신 → 최대 4줄
     h = `<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small></div><div class="il">${cntMin(r)}</div>`;
+  } else if (r.blue) {   // V191: 지금 통화·예약 상태는 글이 길어 한 줄 따로 (1줄 상태 · 2줄 발신 · 3줄 수신 · 4줄 데이터)
+    h = `<div class="il l1"><small class="blue" style="display:inline">${E(r.tag)}</small></div><div class="il">${cntMin(r)}</div>`;
+    if (miss) h += `<small class="why il" style="color:var(--amb)">설정 미비 ${r.miss.length} · ${names}</small>`;
   } else {
-    h = `<div class="il l1"><small${r.blue ? ' class="blue"' : normal ? ' class="okt"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
+    h = `<div class="il l1"><small${normal ? ' class="okt"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
     if (miss) h += `<small class="why il" style="color:var(--amb)">설정 미비 ${r.miss.length} · ${names}</small>`;
   }
   h += sub(it) + sub([dm, (own || r.verNum >= 159) && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '))   // V159: 앱 V159+ 는 기지국을 SIM별로 보냄 → 두 SIM 줄 모두 표시;
