@@ -181,29 +181,30 @@ function lineBody(r) {
   const sub = t => t ? `<small class="il" style="color:var(--sub)">${t}</small>` : '';
   const miss = !normal && r.miss && r.miss.length;
   const names = miss ? E(r.missNames.length >= 3 ? r.missNames[0] + ' 외 ' + (r.missNames.length - 1) : r.missNames.join(' · ')) : '';   // 사유 3개 이상이면 처음 하나 + 외 N
-  let h;
-  if (miss && /^설정 미비/.test(r.tag)) {   // 설정 미비: 1줄 = 설정 미비 N · 사유, 2줄 = 발신
-    h = `<div class="il l1"><small style="display:inline">설정 미비 ${r.miss.length} · ${names}</small></div><div class="il">${cntMin(r)}</div>`;
-  } else if (!normal && !miss) {   // 그 밖의 이상(업데이트 필요·마감 임박 등): 1줄 = 상태, 2줄 = 발신 → 최대 4줄
-    h = `<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small></div><div class="il">${cntMin(r)}</div>`;
-  } else if (r.blue) {   // V191: 지금 통화·예약 상태는 글이 길어 한 줄 따로 (1줄 상태 · 2줄 발신 · 3줄 수신 · 4줄 데이터)
-    h = `<div class="il l1"><small class="blue" style="display:inline">${E(r.tag)}</small></div><div class="il">${cntMin(r)}</div>`;
-    if (miss) h += `<small class="why il" style="color:var(--amb)">설정 미비 ${r.miss.length} · ${names}</small>`;
-  } else {
-    h = `<div class="il l1"><small${normal ? ' class="okt"' : ''} style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`;
-    if (miss) h += `<small class="why il" style="color:var(--amb)">설정 미비 ${r.miss.length} · ${names}</small>`;
-  }
-  h += sub(it) + sub([dm, (own || r.verNum >= 159) && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · '))   // V159: 앱 V159+ 는 기지국을 SIM별로 보냄 → 두 SIM 줄 모두 표시;
-  if (own && r.unk > 0) h += `<small class="why il" style="color:var(--amb)">SIM 미확인 통화 ${r.unk}건 (이번 달)</small>`;   // V162: 통화 기록 SIM 정보가 안 맞아 어느 SIM 에도 집계 안 된 통화
-  return h;
+  // V192: 줄마다 정보 하나, 최대 5줄. 순서 = 상태 / 발신 / 수신 / 설정 미비 / 데이터·기지국 (발신·수신은 항상 붙여서)
+  //       정상은 1줄 '정상 · 발신' 그대로 → 3줄. 'SIM 미확인 통화' 는 5줄 안에 자리가 있을 때만 (없으면 펼친 상세에만)
+  const L = [];
+  const amb = t => `<small class="why il" style="color:var(--amb)">${t}</small>`;
+  const missLine = miss ? amb(`설정 미비 ${r.miss.length} · ${names}`) : '';
+  if (normal) L.push(`<div class="il l1"><small class="okt" style="display:inline">${E(r.tag)}</small> · ${cntMin(r)}</div>`);
+  else if (miss && /^설정 미비/.test(r.tag)) L.push(`<div class="il l1"><small style="display:inline">설정 미비 ${r.miss.length} · ${names}</small></div>`, `<div class="il">${cntMin(r)}</div>`);   // 상태 줄이 곧 설정 미비
+  else L.push(`<div class="il l1"><small${r.blue ? ' class="blue"' : ''} style="display:inline">${E(r.tag)}</small></div>`, `<div class="il">${cntMin(r)}</div>`);
+  if (it) L.push(sub(it));
+  if (missLine && !/^설정 미비/.test(r.tag)) L.push(missLine);
+  const dc = [dm, (own || r.verNum >= 159) && r.cell >= 0 ? cellTxt(r, '기지국 ') : ''].filter(Boolean).join(' · ');   // V159: 앱 V159+ 는 기지국을 SIM별로 보냄 → 두 SIM 줄 모두 표시
+  if (dc) L.push(sub(dc));
+  if (own && r.unk > 0 && L.length < 5) L.push(amb(`SIM 미확인 통화 ${r.unk}건 (이번 달)`));   // V162: 통화 기록 SIM 정보가 안 맞아 어느 SIM 에도 집계 안 된 통화
+  return L.join('');
 }
 function battHtml(r) { return r.batt >= 0 ? `<span class="bt${r.battLow ? ' lo' : ''}">🔋${r.batt}%${r.chg ? ' ⚡' : ''}</span>` : ''; }
 // V187: 하루 배터리 소모 (서버가 최근 24시간 기록으로 계산, 충전 구간 제외). 카드 오른쪽 한 줄
 function drainHtml(r) { return r.drain >= 0 ? `<small class="dr${r.drain >= 25 ? ' d2' : r.drain >= 15 ? ' d1' : ''}"> · 하루 ${r.drain}%</small>` : ''; }   // V187: 배터리 줄 끝에 하루 소모만 (15%↑ 노랑, 25%↑ 빨강, 측정 중이면 안 보임)
 function drainTxt(r) { return r.drain >= 0 ? ` · 하루 소모 약 ${r.drain}% (충전 안 한 ${r.drainH}시간 기준)` : r.drain === -1 && r.drainH !== undefined ? ` · 하루 소모 측정 중 (${r.drainH}/6시간)` : ''; }
 function setupHtml(r) {
-  if (!r.setupKnown) return '';
-  return `<div class="grp" style="margin:10px 0 2px">설정 점검${r.miss.length ? ` <span style="color:var(--amb);font-weight:400">· ${r.miss.length}가지 미비</span>` : ' <span style="color:var(--grn);font-weight:400">· 모두 정상</span>'}</div><div class="g" style="margin-top:0">${SETUP_ITEMS.map(([c, n]) => `<span>${n} <b style="color:var(--${r.miss.indexOf(c) >= 0 ? 'red' : 'grn'})">${r.miss.indexOf(c) >= 0 ? '✗ 안 됨' : '✓'}</b></span>`).join('')}</div>`;
+  // V192: 'SIM 미확인 통화' 는 카드가 5줄이면 카드에서 빠지므로 펼친 상세에는 항상 보임
+  const unk = r.unk > 0 ? `<div class="grp" style="margin:10px 0 2px;color:var(--amb)">SIM 미확인 통화 ${r.unk}건 (이번 달) <span style="color:var(--sub);font-weight:400">· 통화 기록 SIM 정보가 안 맞아 어느 SIM 에도 집계 안 됨</span></div>` : '';
+  if (!r.setupKnown) return unk;
+  return unk + `<div class="grp" style="margin:10px 0 2px">설정 점검${r.miss.length ? ` <span style="color:var(--amb);font-weight:400">· ${r.miss.length}가지 미비</span>` : ' <span style="color:var(--grn);font-weight:400">· 모두 정상</span>'}</div><div class="g" style="margin-top:0">${SETUP_ITEMS.map(([c, n]) => `<span>${n} <b style="color:var(--${r.miss.indexOf(c) >= 0 ? 'red' : 'grn'})">${r.miss.indexOf(c) >= 0 ? '✗ 안 됨' : '✓'}</b></span>`).join('')}</div>`;
 }
 const D9 = t => new Date(t + 9 * 3600000);   // 한국 날짜 기준 (예정일별은 0시(한국) 값)
 const mdK = t => { const d = D9(t); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); };
