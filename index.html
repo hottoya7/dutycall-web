@@ -541,20 +541,31 @@ function load() {
     .then(() => { busy = false; });
 }
 // V213: 승인 대기 기기 — 처음 보고한 기기는 여기서 승인해야 자동 통화·현황 보기가 켜짐
+// V214: 앱의 WebView 는 confirm() 창을 띄우지 못하고 '취소'로 돌려줌 → 같은 버튼을 두 번 눌러 확정(5초 안)
+let regList = [], regArm = '';
 function drawReg(list) {
+  regList = list;
   const el = $('reg'); if (!el) return;
+  const armed = (act, dev) => regArm === act + '|' + dev;
+  const btn = (act, dev, name) => '<button class="ca2" data-reg="' + act + '" data-dev="' + E(dev) + '"' + (armed(act, dev) ? ' style="background:#5b6cf0;color:#fff;font-weight:700"' : '') + '>' + (armed(act, dev) ? '확인' : name) + '</button>';
   if (!list.length) { el.innerHTML = ''; return; }
   const t = x => { const d = new Date(x); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5); };
   el.innerHTML = '<div class="alb al1"><b>승인 대기 기기 ' + list.length + '대 — 내 폰이 맞을 때만 승인하세요</b>' + list.map(r =>
     '<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><div style="flex:1;line-height:1.5">' + E(r.id || '(이름 없음)') + ' · ' + E(r.model) + ' · ' + E(r.ver) +
     '<br><small>기기ID ' + E(r.dev) + ' · 신청 ' + t(r.at) + ' · 마지막 ' + t(r.last) + '</small></div>' +
-    '<button class="ca2" data-reg="regOk" data-dev="' + E(r.dev) + '">승인</button><button class="ca2" data-reg="regNo" data-dev="' + E(r.dev) + '">거절</button></div>').join('') + '</div>';
+    btn('regOk', r.dev, '승인') + btn('regNo', r.dev, '거절') + '</div>' +
+    (armed('regOk', r.dev) || armed('regNo', r.dev) ? '<div style="margin:0 0 6px;font-weight:700">[확인]을 누르면 ' + (armed('regOk', r.dev) ? '승인' : '거절') + '돼요 · 기기ID ' + E(r.dev) + '</div>' : '')).join('') + '</div>';
 }
 document.addEventListener('click', e => {
   const rg = e.target.closest('[data-reg]');   // V213: 기기 승인·거절
   if (rg) {
-    const ok = rg.dataset.reg === 'regOk';
-    if (!confirm((ok ? '이 기기를 승인할까요? 승인하면 자동 통화와 현황 보기가 켜져요.' : '이 기기를 거절할까요?') + '\n기기ID ' + rg.dataset.dev)) return;
+    const k = rg.dataset.reg + '|' + rg.dataset.dev;
+    if (regArm !== k) {   // 첫 번째 누름: '확인'으로 바꾸고 기다림
+      regArm = k; drawReg(regList);
+      setTimeout(() => { if (regArm === k) { regArm = ''; drawReg(regList); } }, 5000);
+      return;
+    }
+    regArm = '';
     rg.disabled = true;
     post_({ act: rg.dataset.reg, id: rg.dataset.dev }).then(x => { if (!x.ok) $('upd').textContent = '처리 실패: ' + (x.error || ''); load(); }).catch(er => { $('upd').textContent = '처리 실패: ' + er; load(); });
     return;
