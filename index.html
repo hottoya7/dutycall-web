@@ -557,10 +557,10 @@ function drawReg(list) {
   if (!list.length) { el.innerHTML = ''; return; }
   const t = x => { const d = new Date(x); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5); };
   el.innerHTML = '<div class="alb al1"><b>승인 대기 기기 ' + list.length + '대 — 내 폰이 맞을 때만 승인하세요</b>' + list.map(r =>
-    '<div style="display:flex;align-items:center;gap:8px;margin:6px 0">' + ck(r.dev) + '<div style="flex:1;line-height:1.5">' + E(r.id || '(이름 없음)') + ' · ' + E(r.model) + ' · ' + E(r.ver) +
-    '<br><small>기기ID ' + E(r.dev) + ' · 신청 ' + t(r.at) + ' · 마지막 ' + t(r.last) + '</small></div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin:6px 0">' + ck(r.dev) + '<div style="flex:1;line-height:1.5">' + '<b>' + E(r.id || '(이름 없음 · ' + String(r.dev).slice(-4) + ')') + '</b> ' + E(r.model) + ' · ' + E(r.ver) +
+    '<br><small>신청 ' + t(r.at) + ' · 마지막 ' + t(r.last) + '</small></div>' +
     btn('regOk', r.dev, '승인') + btn('regNo', r.dev, '거절') + '</div>' +
-    (armed('regOk', r.dev) || armed('regNo', r.dev) ? '<div style="margin:0 0 6px;font-weight:700">[확인]을 누르면 ' + (armed('regOk', r.dev) ? '승인' : '거절') + '돼요 · 기기ID ' + E(r.dev) + '</div>' : '')).join('') +
+    (armed('regOk', r.dev) || armed('regNo', r.dev) ? '<div style="margin:0 0 6px;font-weight:700">[확인]을 누르면 ' + (armed('regOk', r.dev) ? '승인' : '거절') + '돼요 · ' + E(r.id || r.model) + '</div>' : '')).join('') +
     (allArm ? '<div style="margin:0 0 6px;font-weight:700">[확인]을 누르면 체크한 ' + nSel + '대가 승인돼요</div>' : '') + bar + '</div>';
 }
 document.addEventListener('change', e => {
