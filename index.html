@@ -144,12 +144,13 @@ table.tb{table-layout:fixed}.tb th,.tb td{padding:9px 2px;white-space:nowrap;ove
 </style></head><body>
 <div class="top"><b>통화체크 현황</b><small id="upd">불러오는 중…</small></div>
 <div class="bar2"><div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div><button id="bS" class="ca2 sel" style="display:none">선택</button><button id="bC" class="ca2"><i>⇳</i><span>모두 펼치기</span><u style="display:none">0</u></button></div>
-<div id="sum" class="sum"></div><div id="nxt"></div><div id="alb"></div><div id="v"></div>
+<div id="sum" class="sum"></div><div id="nxt"></div><div id="alb"></div><div id="reg"></div><div id="v"></div>
 <script>
-const post_ = (o, ka) => fetch(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ key: KEY }, o)), keepalive: !!ka }).then(r => r.json());   // V141: 변경 작업은 POST
+const post_ = (o, ka) => fetch(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ key: KEY, dev: DEV }, o)), keepalive: !!ka }).then(r => r.json());   // V141: 변경 작업은 POST
 const URL_ = "https://script.google.com/macros/s/AKfycbx2BbwdKjUZDq78Xup1O8VgmCiqRZjzGdrsPrqoOKWjksNfGuC6UNdslBxRf1-luqtZGA/exec";   // Apps Script 배포 관리의 '웹 앱 URL'
 let KEY = location.hash.slice(1);   // 주소 뒤 #키 — 서버로 전송되지 않고 이 폰에만 저장됨
 try { if (KEY) localStorage.setItem('dc_key', KEY); else KEY = localStorage.getItem('dc_key') || ''; } catch (x) {}
+let DEV = ''; { const i = KEY.indexOf('&dev='); if (i >= 0) { DEV = decodeURIComponent(KEY.slice(i + 5)); KEY = KEY.slice(0, i); } }   // V213: 앱이 #키&dev=기기ID 로 엶
 const POLL_SEC = 15;   // 자동 갱신 간격(초). 서버 부하를 더 줄이려면 30 으로
 let data = null, mode = 'list', busy = false; const open = new Set();
 const $ = id => document.getElementById(id);
@@ -529,9 +530,9 @@ function hideAutoOff(d) {
 function load() {
   if (busy) return; busy = true;
   if (!data) $('upd').textContent = '불러오는 중…';
-  fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&json=1')
+  fetch(URL_ + '?key=' + encodeURIComponent(KEY) + (DEV ? '&dev=' + encodeURIComponent(DEV) : '') + '&json=1')
     .then(r => r.json())
-    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); hideAutoOff(d); data = d; render(); })
+    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); hideAutoOff(d); data = d; render(); drawReg(d.regs || []); })
     .catch(() => {
       $('upd').textContent = data
         ? '⚠ 불러오지 못했어요 · ' + new Date(data.now).toTimeString().slice(0,5) + ' 데이터'
@@ -539,7 +540,26 @@ function load() {
     })
     .then(() => { busy = false; });
 }
+// V213: 승인 대기 기기 — 처음 보고한 기기는 여기서 승인해야 자동 통화·현황 보기가 켜짐
+function drawReg(list) {
+  const el = $('reg'); if (!el) return;
+  if (!list.length) { el.innerHTML = ''; return; }
+  const t = x => { const d = new Date(x); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5); };
+  el.innerHTML = '<div class="alb al1"><b>승인 대기 기기 ' + list.length + '대 — 내 폰이 맞을 때만 승인하세요</b>' + list.map(r =>
+    '<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><div style="flex:1;line-height:1.5">' + E(r.id || '(이름 없음)') + ' · ' + E(r.model) + ' · ' + E(r.ver) +
+    '<br><small>기기ID ' + E(r.dev) + ' · 신청 ' + t(r.at) + ' · 마지막 ' + t(r.last) + '</small></div>' +
+    '<button class="ca2" data-reg="regOk" data-dev="' + E(r.dev) + '">승인</button><button class="ca2" data-reg="regNo" data-dev="' + E(r.dev) + '">거절</button></div>').join('') + '</div>';
+}
 document.addEventListener('click', e => {
+  const rg = e.target.closest('[data-reg]');   // V213: 기기 승인·거절
+  if (rg) {
+    const ok = rg.dataset.reg === 'regOk';
+    if (!confirm((ok ? '이 기기를 승인할까요? 승인하면 자동 통화와 현황 보기가 켜져요.' : '이 기기를 거절할까요?') + '
+기기ID ' + rg.dataset.dev)) return;
+    rg.disabled = true;
+    post_({ act: rg.dataset.reg, id: rg.dataset.dev }).then(x => { if (!x.ok) $('upd').textContent = '처리 실패: ' + (x.error || ''); load(); }).catch(er => { $('upd').textContent = '처리 실패: ' + er; load(); });
+    return;
+  }
   const hc = e.target.closest('#ch');   // V127: 통화 예정·최근 통화 목록 창
   if (hc) {
     if (e.target.closest('.ov, [data-chx]')) { chOpen = false; drawCh(); return; }
