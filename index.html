@@ -554,8 +554,7 @@ document.addEventListener('click', e => {
   const rg = e.target.closest('[data-reg]');   // V213: 기기 승인·거절
   if (rg) {
     const ok = rg.dataset.reg === 'regOk';
-    if (!confirm((ok ? '이 기기를 승인할까요? 승인하면 자동 통화와 현황 보기가 켜져요.' : '이 기기를 거절할까요?') + '
-기기ID ' + rg.dataset.dev)) return;
+    if (!confirm((ok ? '이 기기를 승인할까요? 승인하면 자동 통화와 현황 보기가 켜져요.' : '이 기기를 거절할까요?') + '\n기기ID ' + rg.dataset.dev)) return;
     rg.disabled = true;
     post_({ act: rg.dataset.reg, id: rg.dataset.dev }).then(x => { if (!x.ok) $('upd').textContent = '처리 실패: ' + (x.error || ''); load(); }).catch(er => { $('upd').textContent = '처리 실패: ' + er; load(); });
     return;
