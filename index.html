@@ -724,6 +724,10 @@ function twinHtml(r) {   // V139: 같은 폰의 두 번째 SIM 줄 — 폰 공�
 function phoneRows() { return data.rows.filter(r => sel.has(r.key) && (!r.twin || r.main)); }   // V139: 선택한 줄을 폰 단위로(같은 폰 SIM 줄은 대표 1줄)
 function tog(r, on) { data.rows.filter(x => x.pk === r.pk).forEach(x => on ? sel.add(x.key) : sel.delete(x.key)); }   // V139: 같은 폰의 SIM 줄은 함께 선택·해제
 function cmdLine(c) {
+  if (c.kind === '업데이트') {   // V216: 앱 업데이트 명령
+    const su = { '대기': '📨 업데이트 대기', '전달': '📨 업데이트 전달됨', '시작': '⬆ 업데이트 중', '끝': '✓ 업데이트', '거절': '✗ 업데이트 안 됨', '만료': '✗ 업데이트 만료', '취소': '업데이트 취소됨' }[c.st] || c.st;
+    return su + (c.msg ? ' · ' + c.msg : '');
+  }
   const what = (c.kind === '예약' ? hmK(c.at) + ' 예약 ' : '바로 ') + c.min + '분 ' + cntS(c.a, c.b);
   const st = { '대기': '📨 명령 대기', '전달': '📨 전달됨', '시작': '▶ 진행 중', '예약': '⏰ 예약됨', '끝': '✓ 끝', '거절': '✗ 거절', '만료': '✗ 만료', '취소': '취소됨' }[c.st] || c.st;
   return st + ' · ' + what + (c.msg ? ' · ' + c.msg : '');
@@ -771,13 +775,28 @@ function selBar() {
   document.body.classList.toggle('selmode', !!sel);   // V143: 'sm'은 SIM 배지 클래스와 겹쳐 선택 모드에서 글자가 9px·흰색이 되던 문제
   if (!sel) { document.body.style.paddingBottom = ''; if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'sbar'; el.className = 'sbar'; document.body.appendChild(el); }
-  const n = phoneRows().length, pd = pendSel();
-  document.body.style.paddingBottom = pd.length ? '150px' : '';
-  el.innerHTML = pd.length
-    ? `<b>${n}대 선택<span class="tg">대기 명령 ${pd.length}</span></b><button class="b0" data-sb="x">선택 해제</button><div class="l2"><button class="bw" data-sb="cxall">대기 명령 ${pd.length}개 취소</button><button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button></div>`
-    : `<b>${n}대 선택</b><button class="b0" data-sb="x">선택 해제</button><button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button>`;
+  const n = phoneRows().length, pd = pendSel(), nu = updRows().length;
+  document.body.style.paddingBottom = '150px';
+  const ub = `<button class="b0" data-sb="upd"${nu && !updBusy ? '' : ' disabled'}>${updBusy ? '보내는 중…' : updArm ? nu + '대 업데이트 확인' : '⬆ 앱 업데이트' + (nu < n ? ' ' + nu + '대' : '')}</button>`;   // V216: 두 번 눌러 확인(앱 WebView 는 confirm 이 안 뜸)
+  el.innerHTML = (pd.length
+    ? `<b>${n}대 선택<span class="tg">대기 명령 ${pd.length}</span></b><button class="b0" data-sb="x">선택 해제</button><div class="l2"><button class="bw" data-sb="cxall">대기 명령 ${pd.length}개 취소</button>${ub}<button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button></div>`
+    : `<b>${n}대 선택</b><button class="b0" data-sb="x">선택 해제</button><div class="l2">${ub}<button class="b1" data-sb="go"${n ? '' : ' disabled'}>▶ 지금 통화 시작</button></div>`)
+    + (updMsg ? `<div class="l2" style="font-size:12px;color:var(--sub)">${E(updMsg)}</div>` : '');
+}
+// V216: 고른 폰에 '지금 업데이트' 명령 (앱 V216 이상만 — 옛 앱은 명령을 오해할 수 있어 서버도 거름)
+let updArm = false, updBusy = false, updMsg = '', updT = 0;
+function updRows() { return phoneRows().filter(r => r.verNum >= 216); }
+function updClick() {
+  if (!updArm) { updArm = true; updMsg = ''; selBar(); clearTimeout(updT); updT = setTimeout(() => { updArm = false; selBar(); }, 4000); return; }
+  clearTimeout(updT); updArm = false; updBusy = true; selBar();
+  post_({ act: 'new', p: { rows: JSON.stringify(updRows().map(r => r.key)), kind: 'upd' } }).then(x => {
+    updBusy = false;
+    if (!x.ok) { updMsg = '보내지 못했어요: ' + (x.error || ''); selBar(); return; }
+    updMsg = ''; setSel(false); load();
+  }).catch(er => { updBusy = false; updMsg = '보내지 못했어요: ' + er; selBar(); });
 }
 function setSel(on) {
+  if (!on) { updArm = false; updMsg = ''; }
   sel = on ? (sel || new Set()) : null;
   const b = $('bS'); if (b) { b.textContent = sel ? '완료' : '선택'; b.classList.toggle('on', !!sel); }
   if (!sel) cs = null;
@@ -851,7 +870,7 @@ document.addEventListener('click', e => {   // 선택 모드·창 (기존 클릭
   if (un) { e.stopImmediatePropagation(); const p = pc.get(un.dataset.un); if (p) { clearTimeout(p.t); p.el.remove(); (p.ids || [un.dataset.un]).forEach(i => pc.delete(i)); render(); selBar(); } return; }
   if (cx) { e.stopImmediatePropagation(); cxQueue(cx.dataset.cx); return; }
   const sb = t.closest('[data-sb]');
-  if (sb) { e.stopImmediatePropagation(); if (sb.dataset.sb === 'x') setSel(false); else if (sb.dataset.sb === 'cxall') cxQueueAll(pendSel()); else { cs = Object.assign(csDef(), { err: '', busy: false, edA: false, edM: false }); if (cs.b > CAP(cs.min)) cs.a = cs.b = DEF(cs.min); fixAfter(); drawCs(); } return; }
+  if (sb) { e.stopImmediatePropagation(); if (sb.dataset.sb === 'x') setSel(false); else if (sb.dataset.sb === 'upd') updClick(); else if (sb.dataset.sb === 'cxall') cxQueueAll(pendSel()); else { cs = Object.assign(csDef(), { err: '', busy: false, edA: false, edM: false }); if (cs.b > CAP(cs.min)) cs.a = cs.b = DEF(cs.min); fixAfter(); drawCs(); } return; }
   if (t.closest('#cs')) {
     e.stopImmediatePropagation();
     if (t.closest('[data-csx]')) { cs = null; drawCs(); return; }
