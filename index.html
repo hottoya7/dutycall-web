@@ -531,14 +531,26 @@ function load() {
   if (busy) return; busy = true;
   if (!data) $('upd').textContent = '불러오는 중…';
   fetch(URL_ + '?key=' + encodeURIComponent(KEY) + (DEV ? '&dev=' + encodeURIComponent(DEV) : '') + '&json=1')
-    .then(r => r.json())
+    .then(r => r.text())
+    .then(t => { if (t.indexOf('접근할 수 없어요') >= 0) { traceOnce(); throw new Error('denied'); } return JSON.parse(t); })
     .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); hideAutoOff(d); data = d; render(); drawReg(d.regs || []); })
-    .catch(() => {
-      $('upd').textContent = data
+    .catch(err => {
+      $('upd').textContent = err && err.message === 'denied' ? '승인되지 않은 기기예요' : data
         ? '⚠ 불러오지 못했어요 · ' + new Date(data.now).toTimeString().slice(0,5) + ' 데이터'
         : '불러오지 못했어요 · 인터넷 연결을 확인해 주세요';
     })
     .then(() => { busy = false; });
+}
+// 승인 안 된(대기·거절) 기기: 서버는 접속 IP 를 볼 수 없어서, 막힌 화면에서 한 번만 IP·통신사·지역·브라우저 정보를 서버 '접근기록' 시트로 보냄
+let traced = false;
+function traceOnce() {
+  if (traced || !DEV) return; traced = true;
+  const info = { ua: navigator.userAgent, lang: navigator.language || '', tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || ''), scr: screen.width + 'x' + screen.height };
+  const send = x => { const o = Object.assign({}, info, x);
+    fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&dev=' + encodeURIComponent(DEV) + '&trace=1' + Object.keys(o).map(k => '&' + k + '=' + encodeURIComponent(o[k] || '')).join('')).catch(() => {}); };
+  fetch('https://ipapi.co/json/').then(r => r.json())
+    .then(j => { if (!j || !j.ip) throw new Error('ip'); send({ ip: j.ip, isp: j.org || '', loc: [j.city, j.region].filter(Boolean).join(' ') }); })
+    .catch(() => fetch('https://api.ipify.org?format=json').then(r => r.json()).then(j => send({ ip: j.ip })).catch(() => send({})));
 }
 // V213: 승인 대기 기기 — 처음 보고한 기기는 여기서 승인해야 자동 통화·현황 보기가 켜짐
 // V214: 앱의 WebView 는 confirm() 창을 띄우지 못하고 '취소'로 돌려줌 → 같은 버튼을 두 번 눌러 확정(5초 안)
