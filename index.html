@@ -598,7 +598,7 @@ function drawReg(list) {
   const multi = list.length >= 2, nSel = regSel.size, allArm = regArm === 'regAll';
   const ck = dev => multi ? '<input type="checkbox" data-regck="' + E(dev) + '"' + (regSel.has(dev) ? ' checked' : '') + (regRun ? ' disabled' : '') + ' style="width:22px;height:22px;flex:none;margin:0">' : '';
   const bar = multi ? '<div style="display:flex;align-items:center;gap:8px;margin:8px 0 2px"><div style="flex:1;font-size:13px">' + (regRun ? regRun : nSel ? nSel + '대 선택됨' : '승인할 기기를 체크하면 한 번에 승인할 수 있어요') + '</div>' +
-    '<button class="ca2" data-regall="1"' + (!nSel || regRun ? ' disabled' : '') + (allArm ? ' style="background:#5b6cf0;color:#fff;font-weight:700"' : '') + '>' + (allArm ? '확인 (' + nSel + '대 승인)' : '선택한 ' + nSel + '대 승인') + '</button></div>' : '';
+    '<button class="ca2" data-regall="1"' + (!nSel || regRun ? ' disabled' : '') + ' style="width:auto;padding:0 14px;white-space:nowrap;font-size:14px' + (allArm ? ';background:#5b6cf0;color:#fff;font-weight:700' : '') + '">' + (allArm ? '확인 (' + nSel + '대 승인)' : '선택한 ' + nSel + '대 승인') + '</button></div>' : '';
   const armed = (act, dev) => regArm === act + '|' + dev;
   const btn = (act, dev, name) => '<button class="ca2" data-reg="' + act + '" data-dev="' + E(dev) + '"' + (armed(act, dev) ? ' style="background:#5b6cf0;color:#fff;font-weight:700"' : '') + '>' + (armed(act, dev) ? '확인' : name) + '</button>';
   if (!list.length) { el.innerHTML = ''; return; }
