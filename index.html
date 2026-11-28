@@ -544,10 +544,10 @@ function load() {
 // 승인 안 된(대기·거절) 기기: 서버는 접속 IP 를 볼 수 없어서, 막힌 화면에서 한 번만 IP·통신사·지역·브라우저 정보를 서버 '접근기록' 시트로 보냄
 let traced = false;
 function traceOnce() {
-  if (traced || !DEV) return; traced = true;
+  if (traced || !KEY) return; traced = true;   // 기기ID 없는 옛 앱(옛 키)도 보냄
   const info = { ua: navigator.userAgent, lang: navigator.language || '', tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || ''), scr: screen.width + 'x' + screen.height };
   const send = x => { const o = Object.assign({}, info, x);
-    fetch(URL_ + '?key=' + encodeURIComponent(KEY) + '&dev=' + encodeURIComponent(DEV) + '&trace=1' + Object.keys(o).map(k => '&' + k + '=' + encodeURIComponent(o[k] || '')).join('')).catch(() => {}); };
+    fetch(URL_ + '?key=' + encodeURIComponent(KEY) + (DEV ? '&dev=' + encodeURIComponent(DEV) : '') + '&trace=1' + Object.keys(o).map(k => '&' + k + '=' + encodeURIComponent(o[k] || '')).join('')).catch(() => {}); };
   fetch('https://ipapi.co/json/').then(r => r.json())
     .then(j => { if (!j || !j.ip) throw new Error('ip'); send({ ip: j.ip, isp: j.org || '', loc: [j.city, j.region].filter(Boolean).join(' ') }); })
     .catch(() => fetch('https://api.ipify.org?format=json').then(r => r.json()).then(j => send({ ip: j.ip })).catch(() => send({})));
