@@ -140,11 +140,12 @@ table.tb{table-layout:fixed}.tb th,.tb td{padding:9px 2px;white-space:nowrap;ove
 .ln.al1,.ln.al1.open,.tb tr.al1{background:rgba(255,167,38,.22)}.ln.al2,.ln.al2.open,.tb tr.al2{background:rgba(229,57,53,.22)}
 .ln.al2 *,.tb tr.al2 td{color:#ffb4ae}.ln.al2 .bar{--c:#e53935}
 @media (prefers-color-scheme:light){.ln.al2 *,.tb tr.al2 td{color:#b71c1c}}
+.acc{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin:0 0 8px;overflow:hidden;font-size:12.5px}.acc.nw{border-color:#8a3b3b}.acc .ah{display:flex;align-items:center;gap:8px;padding:11px 12px;cursor:pointer;min-height:44px}.acc .ah b{font-size:13.5px}.acc .ah .dt{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none}.acc .ah .nb{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:9px;padding:1px 7px}.acc .ah .ac{margin-left:auto;color:var(--sub);font-size:12px;white-space:nowrap}.acc .ai{border-top:1px solid var(--line);padding:8px 12px;line-height:1.5}.acc .ai.nw{background:rgba(239,83,80,.10)}.acc .a1{display:flex;gap:6px;align-items:center}.acc .a1 .tm{margin-left:auto;color:var(--sub);font-size:11.5px;white-space:nowrap}.acc .tg{font-size:10.5px;border-radius:6px;padding:0 6px;font-weight:700;flex:none}.acc .tr{background:rgba(239,83,80,.25);color:#ff8a80}.acc .ta{background:rgba(255,167,38,.25);color:#ffcc80}.acc .tx{background:var(--line);color:var(--sub)}.acc .a2{color:var(--sub)}.acc .af{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:8px 12px;color:var(--sub);font-size:12px}.acc .af button{border:0;background:var(--bg);color:var(--tx);border-radius:9px;padding:0 12px;min-height:40px;font-size:13px;cursor:pointer}@media (prefers-color-scheme:light){.acc .tr{color:#c62828}.acc .ta{color:#b26a00}}
 .alb{border:2px solid;border-radius:12px;padding:9px 12px;margin:0 0 8px;font-size:12.5px}.alb b{display:block;font-size:13px;margin-bottom:3px}.alb span{display:block;line-height:1.7;cursor:pointer}.alb span::after{content:' ›';color:var(--sub)}.alb.al1{background:rgba(255,167,38,.22);border-color:#ffa726}.alb.al2{background:rgba(229,57,53,.22);border-color:#e53935}.alb.al2 *{color:#ffb4ae}@media (prefers-color-scheme:light){.alb.al2 *{color:#b71c1c}}.gp{scroll-margin-top:90px}
 </style></head><body>
 <div class="top"><b>통화체크 현황</b><small id="upd">불러오는 중…</small></div>
 <div class="bar2"><div class="seg"><button id="bL" class="on">카드·목록</button><button id="bT">표로 보기</button></div><button id="bS" class="ca2 sel" style="display:none">선택</button><button id="bC" class="ca2"><i>⇳</i><span>모두 펼치기</span><u style="display:none">0</u></button></div>
-<div id="sum" class="sum"></div><div id="nxt"></div><div id="alb"></div><div id="reg"></div><div id="v"></div>
+<div id="sum" class="sum"></div><div id="nxt"></div><div id="alb"></div><div id="reg"></div><div id="acc"></div><div id="v"></div>
 <script>
 const post_ = (o, ka) => fetch(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ key: KEY, dev: DEV }, o)), keepalive: !!ka }).then(r => r.json());   // V141: 변경 작업은 POST
 const URL_ = "https://script.google.com/macros/s/AKfycbx2BbwdKjUZDq78Xup1O8VgmCiqRZjzGdrsPrqoOKWjksNfGuC6UNdslBxRf1-luqtZGA/exec";   // Apps Script 배포 관리의 '웹 앱 URL'
@@ -533,7 +534,7 @@ function load() {
   fetch(URL_ + '?key=' + encodeURIComponent(KEY) + (DEV ? '&dev=' + encodeURIComponent(DEV) : '') + '&json=1')
     .then(r => r.text())
     .then(t => { if (t.indexOf('접근할 수 없어요') >= 0) { traceOnce(); throw new Error('denied'); } return JSON.parse(t); })
-    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); hideAutoOff(d); data = d; render(); drawReg(d.regs || []); })
+    .then(d => { if (!d || !d.rows) throw new Error('bad'); d.rows.forEach(shortLabel); hideAutoOff(d); data = d; render(); drawReg(d.regs || []); drawAcc(d.acc || []); })
     .catch(err => {
       $('upd').textContent = err && err.message === 'denied' ? '승인되지 않은 기기예요' : data
         ? '⚠ 불러오지 못했어요 · ' + new Date(data.now).toTimeString().slice(0,5) + ' 데이터'
@@ -552,6 +553,40 @@ function traceOnce() {
     .then(j => { if (!j || !j.ip) throw new Error('ip'); send({ ip: j.ip, isp: j.org || '', loc: [j.city, j.region].filter(Boolean).join(' ') }); })
     .catch(() => fetch('https://api.ipify.org?format=json').then(r => r.json()).then(j => send({ ip: j.ip })).catch(() => send({})));
 }
+// 승인 안 된 접근 기록 (줄 삭제 권한 키에만 서버가 보냄). [모두 읽음]은 이 폰에만 기억
+let accList = [], accOpen = false;
+function accSeen() { try { return Number(localStorage.getItem('dc_accSeen')) || 0; } catch (x) { return 0; } }
+function drawAcc(list) {
+  accList = list;
+  const el = $('acc'); if (!el) return;
+  if (!list.length) { el.innerHTML = ''; return; }
+  const seen = accSeen(), nNew = list.filter(r => r.at > seen).length;
+  const t = x => { const d = new Date(x), n = new Date(), y = new Date(n - 86400000), hm = d.toTimeString().slice(0, 5);
+    return d.toDateString() === n.toDateString() ? '오늘 ' + hm : d.toDateString() === y.toDateString() ? '어제 ' + hm : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm; };
+  const tag = r => { const k = r.kind;
+    if (k.indexOf('옛 키') >= 0) return ['tx', '옛 키']; if (k.indexOf('틀린 키') >= 0) return ['tx', '틀린 키']; if (k.indexOf('관리 키') >= 0) return ['tx', '관리 키'];
+    if (k.indexOf('기기ID 없는') >= 0) return ['tx', 'V212']; if (k.indexOf('키 없는') >= 0) return ['tx', '키 없음'];
+    if (r.st === '거절') return ['tr', '거절']; if (r.st === '차단') return ['ta', '차단']; if (r.st === '대기') return ['ta', '대기']; return ['tx', r.st || '?']; };
+  const what = k => ({ '웹 정보': '현황 화면 열람', '현황조회': '현황 조회', '회선목록': '회선 목록 조회 (앱 백그라운드)', '화면': '화면 열기', '미승인 보고': '상태 보고', '막힌 기종 보고': '막힌 기종 보고', '옛 키 보고': '옛 앱 보고' })[k] || k;
+  const dv = d => d ? (d.length > 9 ? d.slice(0, 4) + '…' + d.slice(-3) : d) : '';
+  const ua = u => { if (!u) return ''; const a = /Android ([\d.]+)/.exec(u), m = /Android [\d.]+; ([^;)]+?)(?: Build|\))/.exec(u); return (a ? 'Android ' + a[1] : '') + (m && m[1] !== 'K' ? ' · ' + m[1] : ''); };
+  let h = '<div class="acc' + (nNew ? ' nw' : '') + '"><div class="ah" data-acc="tog">' + (nNew ? '<span class="dt"></span>' : '') + '<b>승인 안 된 접근 기록</b>' +
+    (nNew ? '<span class="nb">새 ' + nNew + '</span>' : '') + '<span class="ac">최근 7일 · ' + list.length + '건 ' + (accOpen ? '▲' : '▼') + '</span></div>';
+  if (accOpen) {
+    h += list.map(r => { const g = tag(r), u = ua(r.ua), net = [r.isp, r.loc, r.ip ? 'IP ' + r.ip : ''].filter(Boolean).join(' · ');
+      const l2 = [r.model || '기종 모름', r.dev ? '기기 ' + dv(r.dev) : '기기ID 없음', r.id ? '줄 이름 ' + r.id : '', r.ver ? '앱 ' + r.ver : ''].filter(Boolean).join(' · ');
+      return '<div class="ai' + (r.at > seen ? ' nw' : '') + '"><div class="a1"><span class="tg ' + g[0] + '">' + E(g[1]) + '</span><b>' + E(what(r.kind)) + '</b><span class="tm">' + t(r.at) + '</span></div>' +
+        '<div class="a2">' + E(l2) + '</div>' + (net ? '<div>📍 ' + E(net) + '</div>' : '') + (u ? '<div class="a2">' + E(u) + '</div>' : '') + '</div>'; }).join('') +
+      '<div class="af"><span>같은 기기는 30분에 1번만 기록</span>' + (nNew ? '<button data-acc="read">모두 읽음</button>' : '') + '</div>';
+  }
+  el.innerHTML = h + '</div>';
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-acc]'); if (!a) return;
+  if (a.dataset.acc === 'tog') accOpen = !accOpen;
+  else if (a.dataset.acc === 'read') { try { localStorage.setItem('dc_accSeen', String(Math.max.apply(null, accList.map(r => r.at)))); } catch (x) {} }
+  drawAcc(accList);
+});
 // V213: 승인 대기 기기 — 처음 보고한 기기는 여기서 승인해야 자동 통화·현황 보기가 켜짐
 // V214: 앱의 WebView 는 confirm() 창을 띄우지 못하고 '취소'로 돌려줌 → 같은 버튼을 두 번 눌러 확정(5초 안)
 // V214: 여러 대면 체크해서 [선택한 N대 승인] 으로 한 번에 승인 (모두 승인은 일부러 안 만듦 — 모르는 기기가 섞일 수 있음)
